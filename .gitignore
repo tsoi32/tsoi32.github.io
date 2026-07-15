@@ -1,0 +1,6 @@
+node_modules/
+_docs/
+designSpecs/
+.worktrees/
+.superpowers/
+nvim.log

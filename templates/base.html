@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{pageTitle}}</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ogTitle}}">
+  <meta property="og:description" content="{{ogDescription}}">
+  <meta property="og:image" content="{{ogImage}}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ogTitle}}">
+  <meta name="twitter:description" content="{{ogDescription}}">
+  <meta name="twitter:image" content="{{ogImage}}">
+  <link rel="stylesheet" href="{{root}}static/style.css">
+</head>
+<body class="{{bodyClass}}">
+{{pageMascot}}
+<div id="wrapper" class="{{wrapperClass}}">
+
+  {{siteChrome}}
+
+  <div id="main-col">
+    {{body}}
+  </div>
+
+  {{footer}}
+
+</div>
+  <div id="scanlines"></div>
+<script>
+document.querySelectorAll('.content .pre-wrap').forEach(function(wrap) {
+  var pre = wrap.querySelector('pre');
+  if (!pre) return;
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'copy';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    navigator.clipboard.writeText(code ? code.innerText : pre.innerText).then(function() {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(function() { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+    });
+  });
+  pre.appendChild(btn);
+});
+</script>
+{{aboutModal}}
+{{omemoModal}}
+<script>
+(function() {
+  var _openModals = 0;
+  function bindModal(modalId, triggerId, closeBtnId) {
+    var modal    = document.getElementById(modalId);
+    var trigger  = document.getElementById(triggerId);
+    var closeBtn = document.getElementById(closeBtnId);
+    if (!modal || !trigger) return;
+    trigger.addEventListener('click', function(e) {
+      e.preventDefault();
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      _openModals++;
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflowY = 'hidden';
+    });
+    modal.addEventListener('click', function(e) { if (e.target === modal) close(); });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+    function close() {
+      if (!modal.classList.contains('active')) return;
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      _openModals = Math.max(0, _openModals - 1);
+      if (_openModals === 0) { document.body.style.overflow = ''; document.documentElement.style.overflowY = ''; }
+    }
+  }
+  bindModal('about-modal', 'about-modal-trigger', 'about-modal-close');
+  bindModal('omemo-modal', 'omemo-modal-trigger', 'omemo-modal-close');
+})();
+</script>
+</body>
+</html>
