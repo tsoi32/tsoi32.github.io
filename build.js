@@ -37,6 +37,95 @@ function toAsciiLine(text) {
 
 const PAPER_INLINE_OPEN = '\x1f';
 const PAPER_INLINE_CLOSE = '\x1e';
+const PAPER_IMAGE_OPEN = '\x02';
+const PAPER_IMAGE_CLOSE = '\x03';
+const PAPER_DARKBLOCK_OPEN = '\x04';
+const PAPER_DARKBLOCK_CLOSE = '\x05';
+const PAPER_TOKEN_OPEN = '\x06';
+const PAPER_TOKEN_SEP = '\x07';
+const PAPER_TOKEN_CLOSE = '\x08';
+const PAPER_CODEBLOCK_OPEN = '\x0b';
+const PAPER_CODEBLOCK_CLOSE = '\x0c';
+const PAPER_CALLOUT_OPEN = '\x0e';
+const PAPER_CALLOUT_CLOSE = '\x0f';
+const PAPER_TABLE_OPEN = '\x10';
+const PAPER_TABLE_CLOSE = '\x11';
+const PAPER_SUMMARY_OPEN = '\x12';
+const PAPER_SUMMARY_CLOSE = '\x13';
+
+const HLJS_LANG_ALIASES = {
+  asm: 'x86asm',
+  assembly: 'x86asm',
+  nasm: 'x86asm',
+  gas: 'x86asm',
+  fasm: 'x86asm',
+  x86: 'x86asm',
+  arm: 'armasm',
+  arm64: 'armasm',
+  aarch64: 'armasm',
+  mips: 'mipsasm',
+};
+
+function resolveHljsLanguage(lang) {
+  const safe = String(lang || '').trim().toLowerCase();
+  return HLJS_LANG_ALIASES[safe] || safe;
+}
+
+function highlightCodeToPaperLines(code, lang) {
+  const resolvedLang = resolveHljsLanguage(lang);
+  const validLang = hljs.getLanguage(resolvedLang) ? resolvedLang : 'plaintext';
+  if (validLang === 'plaintext') return null;
+  let html;
+  try {
+    html = hljs.highlight(code, { language: validLang }).value;
+  } catch (e) {
+    return null;
+  }
+  const stack = [];
+  let out = '';
+  let i = 0;
+  while (i < html.length) {
+    if (html.startsWith('<span class="', i)) {
+      const end = html.indexOf('">', i);
+      if (end === -1) { out += html[i]; i++; continue; }
+      const cls = html.slice(i + 13, end);
+      stack.push(cls);
+      out += PAPER_TOKEN_OPEN + cls + PAPER_TOKEN_SEP;
+      i = end + 2;
+      continue;
+    }
+    if (html.startsWith('</span>', i)) {
+      if (stack.length) stack.pop();
+      out += PAPER_TOKEN_CLOSE;
+      i += 7;
+      continue;
+    }
+    if (html[i] === '\n') {
+      for (let k = stack.length - 1; k >= 0; k--) out += PAPER_TOKEN_CLOSE;
+      out += '\n';
+      for (let k = 0; k < stack.length; k++) out += PAPER_TOKEN_OPEN + stack[k] + PAPER_TOKEN_SEP;
+      i++;
+      continue;
+    }
+    out += html[i];
+    i++;
+  }
+  return decodeHtmlEntities(out).split('\n');
+}
+
+function wrapDarkBlock(lines) {
+  if (!lines || !lines.length) return lines;
+  const out = lines.slice();
+  out[0] = PAPER_DARKBLOCK_OPEN + out[0];
+  out[out.length - 1] = out[out.length - 1] + PAPER_DARKBLOCK_CLOSE;
+  return out;
+}
+
+function resolvePaperImageSrc(src, root) {
+  const safeSrc = String(src || '');
+  if (/^([a-z][a-z0-9+.-]*:)?\/\//i.test(safeSrc) || safeSrc.startsWith('/')) return safeSrc;
+  return `${root || ''}static/media/${safeSrc}`;
+}
 
 function paperVisibleLength(text) {
   return String(text || '')
@@ -146,7 +235,7 @@ function wrapAsciiText(text, width) {
   function joinTokens(left, right) {
     if (!left) return right;
     if (/^[,.;:!?)]$/.test(right)) return left + right;
-    if (/[([{\-\/]$/.test(left)) return left + right;
+    if (/(?<!\s)[([{\-\/]$/.test(left)) return left + right;
     return `${left} ${right}`;
   }
 
@@ -299,69 +388,6 @@ function buildAsciiBoxLines(text, opts = {}) {
   ];
 }
 
-function buildAsciiTableLines(rows) {
-  if (!rows || !rows.length) return [];
-  const colCount = Math.max(...rows.map(row => row.length));
-  const normalized = rows.map(row => Array.from({ length: colCount }, (_, i) => row[i] || ''));
-  const widths = Array.from({ length: colCount }, (_, i) =>
-    Math.max(3, ...normalized.map(row => paperVisibleLength(row[i])))
-  );
-  const border = '+' + widths.map(w => '-'.repeat(w + 2)).join('+') + '+';
-  const renderRow = row => '| ' + row.map((cell, i) => padPaperVisibleEnd(cell, widths[i])).join(' | ') + ' |';
-  const out = [border, renderRow(normalized[0]), border];
-  for (const row of normalized.slice(1)) out.push(renderRow(row));
-  out.push(border);
-  return out;
-}
-
-function buildAsciiCalloutLines(kind, quoteText, opts = {}) {
-  const label = toAscii(kind).toUpperCase() || 'NOTE';
-  const rawText = toAscii(quoteText);
-  const minWidth = opts.minWidth || (label === 'QUOTE' ? 64 : 72);
-  const wrapWidth = opts.wrapWidth || 72;
-  const borderChar = opts.borderChar || '-';
-  const labelAlign = opts.labelAlign || 'center';
-  const borderStyle = opts.borderStyle || 'ascii';
-  const bodyPad = opts.bodyPad == null ? 1 : opts.bodyPad;
-  const bodyVPad = opts.bodyVPad == null ? 0 : Math.max(0, Math.floor(opts.bodyVPad));
-  const paras = rawText.split(/\n\s*\n/).filter(Boolean);
-  const bodyLines = [];
-  for (const para of paras.length ? paras : ['']) {
-    if (!para.trim()) {
-      bodyLines.push('');
-      continue;
-    }
-    const wrapped = wrapAsciiText(para, wrapWidth);
-    bodyLines.push(...wrapped);
-  }
-
-  const bodyWidthVisible = bodyLines.length ? Math.max(...bodyLines.map(line => paperVisibleLength(line))) : 0;
-  const contentWidth = Math.max(
-    minWidth,
-    label.length + 2,
-    bodyWidthVisible + (bodyPad * 2)
-  );
-  const styles = borderStyle === 'double'
-    ? { tl: '╔', tr: '╗', bl: '╚', br: '╝', h: '═', v: '║' }
-    : borderStyle === 'unicode'
-      ? { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', v: '│' }
-    : { tl: '+', tr: '+', bl: '+', br: '+', h: borderChar, v: '|' };
-  const innerWidth = Math.max(0, contentWidth - (bodyPad * 2));
-  const paddedBodyLines = [
-    ...Array.from({ length: bodyVPad }, () => ''),
-    ...bodyLines,
-    ...Array.from({ length: bodyVPad }, () => ''),
-  ];
-  const top = labelAlign === 'left'
-    ? styles.tl + label + styles.h.repeat(Math.max(0, contentWidth - label.length)) + styles.tr
-    : styles.tl + centerWithChar(` ${label} `, contentWidth, styles.h) + styles.tr;
-  const bottom = styles.bl + styles.h.repeat(contentWidth) + styles.br;
-  const body = paddedBodyLines.length
-    ? paddedBodyLines.map(line => `${styles.v}${' '.repeat(bodyPad)}${padPaperVisibleEnd(line, innerWidth)}${' '.repeat(bodyPad)}${styles.v}`)
-    : [`${styles.v}${' '.repeat(contentWidth)}${styles.v}`];
-  return [top, ...body, bottom];
-}
-
 function normalizeCodeLabel(lang) {
   const safe = toAscii(lang).trim().toLowerCase();
   if (!safe) return 'CODE';
@@ -431,39 +457,6 @@ function paperCodeLabelClass(label) {
   return map[safe] || safe.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 }
 
-function buildAsciiCodeBlockLines(lines, label, opts = {}) {
-  const safeLabel = normalizeCodeLabel(label);
-  const rawLines = Array.isArray(lines) ? lines.map(line => toAsciiLine(line)) : [];
-  const minWidth = opts.minWidth || 0;
-  const bodyPad = opts.bodyPad == null ? 2 : Math.max(0, Math.floor(opts.bodyPad));
-  const bodyVPad = opts.bodyVPad == null ? 1 : Math.max(0, Math.floor(opts.bodyVPad));
-  const align = opts.align || 'left';
-  const bodyWidth = rawLines.length ? Math.max(...rawLines.map(line => line.length)) : 0;
-  const contentWidth = Math.max(
-    minWidth,
-    safeLabel.length,
-    bodyWidth + (bodyPad * 2)
-  );
-  const innerWidth = Math.max(0, contentWidth - (bodyPad * 2));
-  const top = '┌' + safeLabel + '─'.repeat(Math.max(0, contentWidth - safeLabel.length)) + '┐';
-  const bottom = '└' + '─'.repeat(contentWidth) + '┘';
-  const blank = `│${' '.repeat(contentWidth)}│`;
-  const body = rawLines.length
-    ? rawLines.map(line => {
-        const gap = innerWidth - line.length;
-        const left = align === 'left' ? 0 : Math.floor(gap / 2);
-        const right = gap - left;
-        return `│${' '.repeat(bodyPad + left)}${line}${' '.repeat(bodyPad + right)}│`;
-      })
-    : [`│${' '.repeat(contentWidth)}│`];
-  const out = [top];
-  for (let i = 0; i < bodyVPad; i++) out.push(blank);
-  out.push(...body);
-  for (let i = 0; i < bodyVPad; i++) out.push(blank);
-  out.push(bottom);
-  return out;
-}
-
 function buildAsciiHeadingRule(number, text, width, opts = {}) {
   const safe = toAscii(text);
   const label = number ? `--[ ${number} ]--` : '--[ ]--';
@@ -525,19 +518,22 @@ function flattenInlineTokens(tokens) {
   return toAscii(parts.join(''));
 }
 
-function collectHeadingOutline(tokens, counters = [], outline = []) {
+function formatPaperHeadingNumber(offset) {
+  return `0x${offset.toString(16).padStart(4, '0')}`;
+}
+
+function collectHeadingOutline(tokens, state = { offset: 0x40000 }, outline = []) {
   for (const token of tokens || []) {
     if (!token) continue;
     if (token.type === 'heading') {
       const depth = Math.max(1, Math.min(6, token.depth || 1));
-      counters[depth - 1] = (counters[depth - 1] || 0) + 1;
-      for (let i = depth; i < counters.length; i++) counters[i] = 0;
-      const number = counters.slice(0, depth).filter(Boolean).join('.');
+      const number = formatPaperHeadingNumber(state.offset);
+      state.offset += 4;
       token._paperNumber = number;
       outline.push({ depth, number, text: flattenInlineTokens(token.tokens || [{ text: token.text || '' }]) });
     }
     for (const child of nestedTokens(token)) {
-      collectHeadingOutline(child, counters, outline);
+      collectHeadingOutline(child, state, outline);
     }
   }
   return outline;
@@ -610,56 +606,75 @@ function renderParagraphBlock(token, width, indent = '') {
   return wrapped.map((line, i) => (i === 0 ? indent + line : indent + line));
 }
 
+function renderImageBlock(imgToken) {
+  const payload = Buffer.from(JSON.stringify({
+    src: imgToken.href || '',
+    alt: imgToken.text || '',
+  }), 'utf8').toString('base64');
+  return [PAPER_IMAGE_OPEN + payload + PAPER_IMAGE_CLOSE];
+}
+
 function renderCodeBlock(token, width, indent = '') {
-  const rawLines = String(token.text || '').replace(/\r/g, '').split('\n');
+  const rawLines = String(token.text || '').replace(/\r/g, '').split('\n').map(toAsciiLine);
   const lang = String(token.lang || '').trim().toLowerCase();
   if (['txt', 'text', 'plain', 'plaintext'].includes(lang)) {
-    return rawLines.map(line => indent + line);
+    return wrapDarkBlock(rawLines.map(line => indent + line));
   }
 
-  const framed = buildAsciiCodeBlockLines(rawLines, lang || 'CODE', {
-    minWidth: Math.max(56, width - indent.length - 2),
-    bodyPad: 2,
-    bodyVPad: 1,
-    align: 'left',
-  });
-  return framed.map(line => indent + line);
+  const label = normalizeCodeLabel(lang);
+  const labelClass = paperCodeLabelClass(label);
+  const highlighted = highlightCodeToPaperLines(rawLines.join('\n'), lang);
+  const code = (highlighted && highlighted.length === rawLines.length)
+    ? highlighted.join('\n')
+    : rawLines.join('\n');
+  const payload = Buffer.from(JSON.stringify({ label, labelClass, code }), 'utf8').toString('base64');
+  return [indent + PAPER_CODEBLOCK_OPEN + payload + PAPER_CODEBLOCK_CLOSE];
 }
 
 function renderTableBlock(token) {
-  const rows = [];
-  if (token.header && token.header.length) {
-    rows.push(token.header.map(cell => flattenInlineTokens(cell.tokens || [{ text: cell.text || '' }])));
-  }
-  for (const row of token.rows || []) {
-    rows.push(row.map(cell => flattenInlineTokens(cell.tokens || [{ text: cell.text || '' }])));
-  }
-  return buildAsciiTableLines(rows);
+  const header = token.header && token.header.length
+    ? token.header.map(cell => flattenInlineTokens(cell.tokens || [{ text: cell.text || '' }]))
+    : null;
+  const rows = (token.rows || []).map(row =>
+    row.map(cell => flattenInlineTokens(cell.tokens || [{ text: cell.text || '' }]))
+  );
+  const payload = Buffer.from(JSON.stringify({ header, rows }), 'utf8').toString('base64');
+  return [PAPER_TABLE_OPEN + payload + PAPER_TABLE_CLOSE];
 }
 
 function renderBlockquoteBlock(token, width, depth = 0) {
+  const children = token.tokens || [];
+  const indent = '  '.repeat(Math.max(0, depth));
+  const firstParagraph = children.find(c => c && c.type === 'paragraph');
+  const firstText = firstParagraph
+    ? flattenInlineTokens(firstParagraph.tokens || [{ text: firstParagraph.text || '' }])
+    : '';
+  const labelMatch = firstText.match(/^(NOTE|WARN|INFO):\s*/i);
+
+  if (labelMatch) {
+    const kind = labelMatch[1].toUpperCase();
+    const parts = [];
+    for (const child of children) {
+      if (!child) continue;
+      if (child.type === 'paragraph') {
+        parts.push(flattenInlineTokens(child.tokens || [{ text: child.text || '' }]));
+      } else if (child.type === 'list') {
+        parts.push(renderListBlock(child, width - 4, 0).join('\n'));
+      } else if (child.type === 'code') {
+        parts.push(renderCodeBlock(child, width - 4, '').join('\n'));
+      }
+    }
+    const body = parts.join('\n\n').trim().replace(/^(NOTE|WARN|INFO):\s*/i, '');
+    const payload = Buffer.from(JSON.stringify({ kind, body }), 'utf8').toString('base64');
+    return [indent + PAPER_CALLOUT_OPEN + payload + PAPER_CALLOUT_CLOSE];
+  }
+
   const inner = [];
-  for (const child of token.tokens || []) {
+  for (const child of children) {
     if (!child) continue;
     if (child.type === 'paragraph') inner.push(...renderParagraphBlock(child, width - 4, ''));
     else if (child.type === 'list') inner.push(...renderListBlock(child, width - 4, 0));
     else if (child.type === 'code') inner.push(...renderCodeBlock(child, width - 4, ''));
-  }
-  const raw = inner.join('\n').trim();
-  const labelMatch = raw.match(/^(NOTE|WARN):\s*/i);
-  const indent = '  '.repeat(Math.max(0, depth));
-  if (labelMatch) {
-    const kind = labelMatch[1].toUpperCase();
-    const body = raw.replace(/^(NOTE|WARN):\s*/i, '');
-    return buildAsciiCalloutLines(kind, body, {
-      minWidth: Math.max(72, width - indent.length - 2),
-      wrapWidth: Math.max(44, width - indent.length - 6),
-      labelAlign: 'left',
-      borderStyle: 'double',
-      bodyPad: 2,
-      bodyVPad: 1,
-    })
-      .map(line => indent + line);
   }
   return inner.map(line => (line ? indent + line : line));
 }
@@ -674,8 +689,13 @@ function renderPaperToken(token, ctx = {}) {
       const lines = buildAsciiHeadingRule(number, flattenInlineTokens(token.tokens || [{ text: token.text || '' }]), width, { brackets: true });
       return lines;
     }
-    case 'paragraph':
+    case 'paragraph': {
+      const inline = token.tokens || [];
+      if (inline.length === 1 && inline[0].type === 'image') {
+        return renderImageBlock(inline[0]);
+      }
       return renderParagraphBlock(token, width);
+    }
     case 'list':
       return renderListBlock(token, width);
     case 'blockquote':
@@ -738,7 +758,25 @@ function renderPaperBody(body, opts = {}) {
     else pushBlock(lines);
   }
 
-  return blocks.join('\n').replace(/\n{6,}/g, '\n\n\n\n\n').trimEnd();
+  const opaqueBlockMarkers = [
+    PAPER_CODEBLOCK_OPEN, PAPER_CALLOUT_OPEN, PAPER_TABLE_OPEN,
+    PAPER_SUMMARY_OPEN, PAPER_IMAGE_OPEN,
+  ];
+  let insideDarkBlock = false;
+  const withLineBg = blocks.map(line => {
+    if (line === '') return line;
+    const wasInsideDark = insideDarkBlock;
+    const hasDarkOpen = line.includes(PAPER_DARKBLOCK_OPEN);
+    const hasDarkClose = line.includes(PAPER_DARKBLOCK_CLOSE);
+    if (hasDarkOpen) insideDarkBlock = true;
+    if (hasDarkClose) insideDarkBlock = false;
+    const isOpaque = wasInsideDark || hasDarkOpen || hasDarkClose
+      || opaqueBlockMarkers.some(marker => line.includes(marker));
+    if (isOpaque) return line;
+    return PAPER_TOKEN_OPEN + 'paper-line-bg' + PAPER_TOKEN_SEP + line + PAPER_TOKEN_CLOSE;
+  });
+
+  return withLineBg.join('\n').replace(/\n{6,}/g, '\n\n\n\n\n').trimEnd();
 }
 
 function renderPaperTopNav(root = '', width = 78) {
@@ -813,14 +851,15 @@ function readPaperCover(meta) {
 }
 
 function renderPaperSummary(entries, width) {
-  const lines = [`--[ Summary ]${'-'.repeat(Math.max(0, width - 13))}`];
-  for (const entry of entries) {
-    const label = entry.depth > 1 ? entry.number : entry.number;
+  const lines = [];
+  entries.forEach(entry => {
+    const label = entry.number;
     const text = toAscii(entry.text);
-    const wrapped = wrapAsciiText(`${label} - ${text}`, width);
-    lines.push(...wrapped);
-  }
-  return lines;
+    lines.push(...wrapAsciiText(`${label} - ${text}`, width - 4));
+  });
+  const body = lines.join('\n');
+  const payload = Buffer.from(JSON.stringify({ body }), 'utf8').toString('base64');
+  return [PAPER_SUMMARY_OPEN + payload + PAPER_SUMMARY_CLOSE];
 }
 
 function renderPaperDocument(post, body = post.body || '') {
@@ -1231,20 +1270,93 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function decoratePaperDocumentHtml(html) {
-  return String(html || '')
-    .replace(/(^|\n)([ \t]*)╔NOTE(?=═)/g, (_, start, indent) => `${start}${indent}╔<span class="paper-callout-label paper-callout-label--note">NOTE</span>`)
-    .replace(/(^|\n)([ \t]*)╔WARN(?=═)/g, (_, start, indent) => `${start}${indent}╔<span class="paper-callout-label paper-callout-label--warn">WARN</span>`)
-    .replace(/(^|\n)([ \t]*)┌([A-Z][A-Z0-9+#.-]*)(?=─)/g, (_, start, indent, label) => {
-      const labelClass = paperCodeLabelClass(label);
-      return `${start}${indent}┌<span class="paper-code-label paper-code-label--${labelClass}">${label}</span>`;
+function convertPaperTokenMarkers(text) {
+  let out = '';
+  let i = 0;
+  while (i < text.length) {
+    const ch = text[i];
+    if (ch === PAPER_TOKEN_OPEN) {
+      const sepIdx = text.indexOf(PAPER_TOKEN_SEP, i);
+      if (sepIdx === -1) { out += ch; i++; continue; }
+      const cls = text.slice(i + 1, sepIdx);
+      out += `<span class="${cls}">`;
+      i = sepIdx + 1;
+      continue;
+    }
+    if (ch === PAPER_TOKEN_CLOSE) {
+      out += '</span>';
+      i++;
+      continue;
+    }
+    out += ch;
+    i++;
+  }
+  return out;
+}
+
+function decoratePaperDocumentHtml(html, root = '') {
+  let out = String(html || '')
+    .replace(/\x04/g, '<span class="paper-block-dark">')
+    .replace(/\x05/g, '</span>')
+    .replace(/\x02([A-Za-z0-9+/=]*)\x03/g, (_, payload) => {
+      try {
+        const { src, alt } = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
+        const resolvedSrc = resolvePaperImageSrc(src, root);
+        return `<img src="${escapeHtml(resolvedSrc)}" alt="${escapeHtml(alt || '')}" class="paper-inline-image" loading="lazy">`;
+      } catch (e) {
+        return '';
+      }
     })
+    .replace(/\x0b([A-Za-z0-9+/=]*)\x0c/g, (_, payload) => {
+      try {
+        const { label, labelClass, code } = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
+        return `<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--${escapeHtml(labelClass)}">${escapeHtml(label)}</span></div><pre><code class="hljs language-${escapeHtml(labelClass)}">${escapeHtml(code)}</code></pre></div>`;
+      } catch (e) {
+        return '';
+      }
+    })
+    .replace(/\x0e([A-Za-z0-9+/=]*)\x0f/g, (_, payload) => {
+      try {
+        const { kind, body } = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
+        const kindClass = kind.toLowerCase();
+        const paragraphs = body
+          .split(/\n\n+/)
+          .map(p => `<p>${escapeHtml(p.trim())}</p>`)
+          .join('');
+        return `<div class="paper-callout paper-callout--${kindClass}"><div class="paper-callout__label">${escapeHtml(kind)}</div><div class="paper-callout__body">${paragraphs}</div></div>`;
+      } catch (e) {
+        return '';
+      }
+    })
+    .replace(/\x10([A-Za-z0-9+/=]*)\x11/g, (_, payload) => {
+      try {
+        const { header, rows } = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
+        const headHtml = header
+          ? `<thead><tr>${header.map(cell => `<th>${escapeHtml(cell)}</th>`).join('')}</tr></thead>`
+          : '';
+        const bodyHtml = `<tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+        return `<div class="paper-table-wrap"><table class="paper-table">${headHtml}${bodyHtml}</table></div>`;
+      } catch (e) {
+        return '';
+      }
+    })
+    .replace(/\x12([A-Za-z0-9+/=]*)\x13/g, (_, payload) => {
+      try {
+        const { body } = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
+        return `<div class="paper-callout paper-callout--summary"><div class="paper-callout__label">Summary</div><pre class="paper-callout__body paper-callout__body--pre">${escapeHtml(body)}</pre></div>`;
+      } catch (e) {
+        return '';
+      }
+    });
+  out = convertPaperTokenMarkers(out);
+  out = out
     .replace(/\x1f([^\x1e]*?)\x1e/g, (_, code) => {
       return `<span class="paper-inline-code paper-inline-code--red">${code}</span>`;
     })
     .replace(/`([^`\n]+)`/g, (_, code) => {
       return `<span class="paper-inline-code paper-inline-code--red">${code}</span>`;
     });
+  return out;
 }
 
 // ─── file helpers ─────────────────────────────────────────────────────────────
@@ -1548,12 +1660,12 @@ function wrapInBase(body, opts) {
   const siteChrome = opts.siteChrome != null
     ? opts.siteChrome
     : `${asciiTitle()}<div class="separator"></div>`;
-  const fullTitle = opts.pageTitle ? `${opts.pageTitle} :: ${CONFIG.siteTitle}` : CONFIG.siteTitle;
+  const fullTitle = opts.rawTitle || (opts.pageTitle ? `${opts.pageTitle} :: ${CONFIG.siteTitle}` : CONFIG.siteTitle);
   return renderTemplate(base, {
     pageTitle:  fullTitle,
     ogTitle:       escapeHtml(fullTitle),
     ogDescription: escapeHtml(CONFIG.ogDescription),
-    ogImage:       `${CONFIG.siteUrl}/${CONFIG.ogImagePath}`,
+    ogImage:       opts.ogImage || `${CONFIG.siteUrl}/${CONFIG.ogImagePath}`,
     root:       opts.root || '',
     bodyClass:  opts.bodyClass || '',
     wrapperClass: opts.wrapperClass || '',
@@ -1862,17 +1974,23 @@ function generatePostPage(post, allPosts, outDir, root, topicsMap, opts = {}) {
   const effectiveRoot = opts.dirName ? root + '../' : root;
   const paperTpl = readTemplate('paper');
   const paperText = renderPaperDocument(post);
-  const paperHtml = decoratePaperDocumentHtml(escapeHtml(paperText));
+  const paperHtml = decoratePaperDocumentHtml(escapeHtml(paperText), effectiveRoot);
+  const bannerFile = post.meta.banner || '';
+  const bannerHtml = bannerFile
+    ? `<div class="paper-banner-wrap"><img src="${effectiveRoot}static/media/${escapeHtml(bannerFile)}" alt="" class="paper-banner" loading="lazy"></div>`
+    : '';
   const body = renderTemplate(paperTpl, {
     content: paperHtml,
-  });
+  }) + bannerHtml;
   const html = wrapInBase(body, {
     pageTitle: post.meta.title || post.slug,
+    rawTitle: `${post.meta.title || post.slug} | @${post.meta.author || CONFIG.siteTitle}`,
     root: effectiveRoot,
     bodyClass: 'paper-mode',
     wrapperClass: 'paper-shell',
     siteChrome: renderPaperTopNav(effectiveRoot),
     pageMascot: opts.mascot ? renderPageMascot(effectiveRoot) : '',
+    ogImage: bannerFile ? `${CONFIG.siteUrl}/static/media/${bannerFile}` : undefined,
   });
   if (opts.dirName) {
     const pageDir = path.join(outDir, opts.dirName);
@@ -1962,7 +2080,7 @@ function generateHomePage(posts, notes, topics, themes) {
   });
 
   const html = wrapInBase(body, {
-    pageTitle: '',
+    rawTitle: `@tsoi32 | @${SITE_ASCII_TITLE}`,
     root: '',
     bodyClass: 'home-mode',
     wrapperClass: 'home-shell',
@@ -1979,18 +2097,12 @@ function generate404Page() {
     <span class="panel-controls">[ 0x00000000 ]</span>
   </div>
   <div class="panel-body" style="padding:40px 24px;text-align:center;">
-    <div style="font-size:72px;font-weight:700;letter-spacing:0.05em;color:var(--accent);line-height:1;text-shadow:3px 0 0 rgba(255,32,32,0.35),-3px 0 0 rgba(255,32,32,0.20);">404</div>
-    <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-top:10px;">página não encontrada</div>
-    <div style="margin:28px auto;max-width:420px;text-align:left;background:#000;border-top:1px solid var(--border-hi);border-left:1px solid var(--border-hi);border-bottom:1px solid #000;border-right:1px solid #000;padding:14px 16px;font-size:12px;line-height:1.9;color:var(--text-muted);">
-      <span style="color:var(--accent);">$</span> GET <span style="color:var(--text);">$REQUEST_URI</span><br>
-      <span style="color:#c00;">error:</span> no route matched — handler returned NULL<br>
-      <span style="color:#c00;">error:</span> address 0x404 not mapped to object<br>
-      <span style="color:var(--text-muted);opacity:.5;">core dumped.</span>
-    </div>
-    <a href="index.html" style="display:inline-block;margin-top:4px;padding:6px 20px;background:var(--surface);border-top:1px solid var(--border-hi);border-left:1px solid var(--border-hi);border-bottom:1px solid #000;border-right:1px solid #000;color:var(--text-muted);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;transition:background .15s,color .15s;" onmouseover="this.style.background='var(--ph)';this.style.color='var(--text)'" onmouseout="this.style.background='var(--surface)';this.style.color='var(--text-muted)'">← voltar para home</a>
+    <img src="static/media/404-meme.png" alt="404" style="max-width:280px;width:100%;height:auto;border:1px solid var(--border);">
+    <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-top:14px;">página não encontrada</div>
+    <a href="index.html" style="display:inline-block;margin-top:24px;padding:6px 20px;background:var(--surface);border-top:1px solid var(--border-hi);border-left:1px solid var(--border-hi);border-bottom:1px solid #000;border-right:1px solid #000;color:var(--text-muted);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;transition:background .15s,color .15s;" onmouseover="this.style.background='var(--ph)';this.style.color='var(--text)'" onmouseout="this.style.background='var(--surface)';this.style.color='var(--text-muted)'">← voltar para home</a>
   </div>
 </div>`;
-  const html = wrapInBase(body, { pageTitle: '404 :: not found', root: '' });
+  const html = wrapInBase(body, { rawTitle: 'thebixowithsevenheads', root: '', siteChrome: '' });
   fs.writeFileSync(path.join('docs', '404.html'), html);
 }
 
