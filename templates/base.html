@@ -47,7 +47,6 @@ document.querySelectorAll('.content .pre-wrap').forEach(function(wrap) {
   pre.appendChild(btn);
 });
 </script>
-{{aboutModal}}
 {{omemoModal}}
 <script>
 (function() {
@@ -76,7 +75,6 @@ document.querySelectorAll('.content .pre-wrap').forEach(function(wrap) {
       if (_openModals === 0) { document.body.style.overflow = ''; document.documentElement.style.overflowY = ''; }
     }
   }
-  bindModal('about-modal', 'about-modal-trigger', 'about-modal-close');
   bindModal('omemo-modal', 'omemo-modal-trigger', 'omemo-modal-close');
 })();
 </script>

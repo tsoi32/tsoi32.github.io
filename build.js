@@ -1229,9 +1229,6 @@ function asciiTitle() {
   });
 }
 
-// sidebar about text — set early in main() before any page generation
-let _aboutSummary = '';
-
 // ─── utilities ───────────────────────────────────────────────────────────────
 
 function parseFrontmatter(content) {
@@ -1620,24 +1617,6 @@ function formatTags(tags) {
   return ' [' + arr.join(', ') + ']';
 }
 
-function buildAboutModal() {
-  const raw = fs.existsSync('src/about.md') ? fs.readFileSync('src/about.md', 'utf8') : '';
-  if (!raw.trim()) return '';
-  const { body } = parseFrontmatter(raw);
-  const content  = renderMarkdownHtml(body);
-  return `<div id="about-modal" aria-hidden="true">
-  <div class="about-modal-inner">
-    <div class="panel">
-      <div class="panel-header">
-        <span>sobre — tsoi32</span>
-        <span class="window-controls"><span class="wbtn" id="about-modal-close">×</span></span>
-      </div>
-      <div class="panel-body content">${content}</div>
-    </div>
-  </div>
-</div>`;
-}
-
 function buildOmemoModal() {
   const raw = fs.existsSync('gifs/omemo.txt') ? fs.readFileSync('gifs/omemo.txt', 'utf8') : '';
   if (!raw.trim()) return '';
@@ -1674,7 +1653,6 @@ function wrapInBase(body, opts) {
     breadcrumb: opts.breadcrumb || '',
     footer:     generateFooter(opts.root || '', cfg),
     omemoModal: buildOmemoModal(),
-    aboutModal: buildAboutModal(),
     pageMascot: opts.pageMascot || '',
   });
 }
@@ -2137,11 +2115,6 @@ function main() {
   copyStatic();
   fs.writeFileSync(path.join('docs', '.nojekyll'), '');
   fs.writeFileSync(path.join('docs', '.domains'), 'thebixowithsevenheads.wtf\ntsoi32.codeberg.page\npages.tsoi32.codeberg.page\n');
-
-  // Read about summary before generating pages (needed for sidebar on every page)
-  const aboutRaw = fs.existsSync('src/about.md') ? fs.readFileSync('src/about.md', 'utf8') : '';
-  const { meta: aboutInitialMeta, body: aboutBody } = parseFrontmatter(aboutRaw);
-  _aboutSummary = aboutInitialMeta.summary || aboutInitialMeta.description || getExcerpt(aboutBody, 180);
 
   const posts  = readMarkdownFiles('src/posts');
   const notes  = readMarkdownFiles('src/notes');

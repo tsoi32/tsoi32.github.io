@@ -1462,7 +1462,6 @@ body.paper-mode .content {
 .footer-gifs a:hover img  { opacity: 1; }
 
 /* === MODALS === */
-#about-modal,
 #omemo-modal {
   display:         none;
   position:        fixed;
@@ -1472,10 +1471,8 @@ body.paper-mode .content {
   align-items:     center;
   justify-content: center;
 }
-#about-modal.active,
 #omemo-modal.active { display: flex; }
 
-.about-modal-inner,
 .pgp-modal-inner {
   max-width:  560px;
   width:      90%;
