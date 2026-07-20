@@ -1830,39 +1830,40 @@ ${items}
 </section>`;
 }
 
-function renderManifestoBinary(text) {
-  let state = 0x64;
-  const nextChance = () => {
-    state = (state * 1664525 + 1013904223) >>> 0;
-    return state / 0x100000000;
-  };
-  return String(text || '')
-    .split('')
-    .map(ch => {
-      if (ch !== '0' && ch !== '1') return ch;
-      if (nextChance() < 0.24) {
-        return `<span class="home-manifesto__bit home-manifesto__bit--red">${escapeHtml(ch)}</span>`;
-      }
-      return escapeHtml(ch);
-    })
-    .join('');
-}
-
 function renderHomeManifesto() {
-  const binary = '01001010 01110101 01101101 01110000 01101001 01101110 01100111 00100000 01110100 01101000 01100101 00100000 01101101 01101111 01110101 01101110 01110100 01100001 01101001 01101110 01110011 00111111 00100000 01001001 00100111 01101101 00100000 01100001 00100000 01100111 01101001 01100001 01101110 01110100 00100001 00100000 01101110 01101111 00100001 00111111';
-  const label = 'MANIFESTO.pcap';
-  const body  = `<pre class="home-manifesto__body"><span class="sr-only">${escapeHtml(binary)}</span><span aria-hidden="true" class="home-manifesto__binary">${renderManifestoBinary(binary)}</span></pre>`;
   const image = `<img src="static/media/guns-meme.jpg" alt="" class="home-manifesto__image" loading="lazy" width="648" height="960">
   <div class="home-manifesto__image-caption">bitkill.png</div>`;
-  return `<section class="home-manifesto home-manifesto--static">
-  <div class="home-card__label">${label}</div>
-  ${body}
+  const bands = [
+    { file: 'band-kino.png',      name: 'КИНО',         url: 'https://kino.band/muzyka/gruppa-krovi.html' },
+    { file: 'band-ulitsa.jpg',    name: 'УЛИЦА ВОСТОК' },
+    { file: 'band-molchat.jpg',   name: 'МОЛЧАТ ДОМА',  url: 'https://molchatdoma.com/music' },
+    { file: 'band-peremotka.jpg', name: 'ПЕРЕМОТКА' },
+  ];
+  const bandsGrid = `<div class="home-manifesto__bands">
+${bands.map(b => {
+    const img  = `<img src="static/media/${b.file}" alt="${escapeHtml(b.name)}" class="home-manifesto__band-img" loading="lazy">`;
+    const name = `<div class="home-manifesto__band-name">${escapeHtml(b.name)}</div>`;
+    return b.url
+      ? `  <a class="home-manifesto__band" href="${escapeHtml(b.url)}" target="_blank" rel="noopener noreferrer">
+    ${img}
+    ${name}
+  </a>`
+      : `  <div class="home-manifesto__band">
+    ${img}
+    ${name}
+  </div>`;
+  }).join('\n')}
+</div>`;
+  const divider = `<div class="home-manifesto__divider" aria-hidden="true">${'-'.repeat(40)}</div>`;
+  const bandsTitle = `<div class="home-manifesto__bands-title" lang="ar" dir="rtl">أفضل الفرق الموسيقية</div>`;
+  return `<section class="home-manifesto home-manifesto--image">
+  ${image}
 </section>
-<details class="home-manifesto home-manifesto--collapsible">
-  <summary class="home-card__label">${label}</summary>
-  ${body}
-</details>
-${image}`;
+${divider}
+<section class="home-manifesto home-manifesto--bands">
+  ${bandsTitle}
+  ${bandsGrid}
+</section>`;
 }
 
 function renderHomeRail(posts, notes) {
