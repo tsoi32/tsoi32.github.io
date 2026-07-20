@@ -64,21 +64,19 @@
 <section class="home-manifesto home-manifesto--bands">
   <div class="home-manifesto__bands-title" lang="ar" dir="rtl">أفضل الفرق الموسيقية</div>
   <div class="home-manifesto__bands">
-  <a class="home-manifesto__band" href="https://kino.band/muzyka/gruppa-krovi.html" target="_blank" rel="noopener noreferrer">
-    <img src="static/media/band-kino.png" alt="КИНО" class="home-manifesto__band-img" loading="lazy">
-    <div class="home-manifesto__band-name">КИНО</div>
-  </a>
   <div class="home-manifesto__band">
-    <img src="static/media/band-ulitsa.jpg" alt="УЛИЦА ВОСТОК" class="home-manifesto__band-img" loading="lazy">
-    <div class="home-manifesto__band-name">УЛИЦА ВОСТОК</div>
+    <a class="home-manifesto__band-cover" href="https://kino.band/muzyka/gruppa-krovi.html" target="_blank" rel="noopener noreferrer"><img src="static/media/band-kino.png" alt="КИНО" class="home-manifesto__band-img" loading="lazy"></a>
+    <div class="home-manifesto__band-row">
+      <span class="home-manifesto__band-name">КИНО</span>
+      <button type="button" class="home-manifesto__band-play" data-audio="static/media/preview-kino.mp3" aria-label="tocar prévia de КИНО">[&gt;]</button>
+    </div>
   </div>
-  <a class="home-manifesto__band" href="https://molchatdoma.com/music" target="_blank" rel="noopener noreferrer">
-    <img src="static/media/band-molchat.jpg" alt="МОЛЧАТ ДОМА" class="home-manifesto__band-img" loading="lazy">
-    <div class="home-manifesto__band-name">МОЛЧАТ ДОМА</div>
-  </a>
   <div class="home-manifesto__band">
-    <img src="static/media/band-peremotka.jpg" alt="ПЕРЕМОТКА" class="home-manifesto__band-img" loading="lazy">
-    <div class="home-manifesto__band-name">ПЕРЕМОТКА</div>
+    <a class="home-manifesto__band-cover" href="https://molchatdoma.com/music" target="_blank" rel="noopener noreferrer"><img src="static/media/band-molchat.jpg" alt="МОЛЧАТ ДОМА" class="home-manifesto__band-img" loading="lazy"></a>
+    <div class="home-manifesto__band-row">
+      <span class="home-manifesto__band-name">МОЛЧАТ ДОМА</span>
+      <button type="button" class="home-manifesto__band-play" data-audio="static/media/preview-molchat.mp3" aria-label="tocar prévia de МОЛЧАТ ДОМА">[&gt;]</button>
+    </div>
   </div>
 </div>
 </section>
@@ -172,6 +170,32 @@ ED85E8AA 77DE132D 807E8E90 7038194E
     }
   }
   bindModal('omemo-modal', 'omemo-modal-trigger', 'omemo-modal-close');
+})();
+</script>
+<script>
+(function() {
+  var current = null;
+  document.querySelectorAll('.home-manifesto__band-play').forEach(function(btn) {
+    var audio = new Audio(btn.getAttribute('data-audio'));
+    audio.preload = 'none';
+    audio.addEventListener('ended', function() { btn.textContent = '[>]'; });
+    btn.addEventListener('click', function() {
+      if (current && current.audio !== audio) {
+        current.audio.pause();
+        current.audio.currentTime = 0;
+        current.btn.textContent = '[>]';
+      }
+      if (audio.paused) {
+        audio.play();
+        btn.textContent = '[||]';
+        current = { audio: audio, btn: btn };
+      } else {
+        audio.pause();
+        btn.textContent = '[>]';
+        current = null;
+      }
+    });
+  });
 })();
 </script>
 </body>

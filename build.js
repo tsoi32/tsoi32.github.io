@@ -1834,23 +1834,24 @@ function renderHomeManifesto() {
   const image = `<img src="static/media/guns-meme.jpg" alt="" class="home-manifesto__image" loading="lazy" width="648" height="960">
   <div class="home-manifesto__image-caption">bitkill.png</div>`;
   const bands = [
-    { file: 'band-kino.png',      name: 'КИНО',         url: 'https://kino.band/muzyka/gruppa-krovi.html' },
-    { file: 'band-ulitsa.jpg',    name: 'УЛИЦА ВОСТОК' },
-    { file: 'band-molchat.jpg',   name: 'МОЛЧАТ ДОМА',  url: 'https://molchatdoma.com/music' },
-    { file: 'band-peremotka.jpg', name: 'ПЕРЕМОТКА' },
+    { file: 'band-kino.png',    name: 'КИНО',        url: 'https://kino.band/muzyka/gruppa-krovi.html', preview: 'preview-kino.mp3' },
+    { file: 'band-molchat.jpg', name: 'МОЛЧАТ ДОМА', url: 'https://molchatdoma.com/music',               preview: 'preview-molchat.mp3' },
   ];
   const bandsGrid = `<div class="home-manifesto__bands">
 ${bands.map(b => {
-    const img  = `<img src="static/media/${b.file}" alt="${escapeHtml(b.name)}" class="home-manifesto__band-img" loading="lazy">`;
-    const name = `<div class="home-manifesto__band-name">${escapeHtml(b.name)}</div>`;
-    return b.url
-      ? `  <a class="home-manifesto__band" href="${escapeHtml(b.url)}" target="_blank" rel="noopener noreferrer">
-    ${img}
-    ${name}
-  </a>`
-      : `  <div class="home-manifesto__band">
-    ${img}
-    ${name}
+    const img = `<img src="static/media/${b.file}" alt="${escapeHtml(b.name)}" class="home-manifesto__band-img" loading="lazy">`;
+    const cover = b.url
+      ? `<a class="home-manifesto__band-cover" href="${escapeHtml(b.url)}" target="_blank" rel="noopener noreferrer">${img}</a>`
+      : img;
+    const play = b.preview
+      ? `<button type="button" class="home-manifesto__band-play" data-audio="static/media/${escapeHtml(b.preview)}" aria-label="tocar prévia de ${escapeHtml(b.name)}">[&gt;]</button>`
+      : '';
+    return `  <div class="home-manifesto__band">
+    ${cover}
+    <div class="home-manifesto__band-row">
+      <span class="home-manifesto__band-name">${escapeHtml(b.name)}</span>
+      ${play}
+    </div>
   </div>`;
   }).join('\n')}
 </div>`;

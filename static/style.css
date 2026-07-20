@@ -461,16 +461,18 @@ body.home-mode #wrapper.home-shell {
 }
 
 .home-manifesto__band {
-  display:         flex;
-  flex-direction:  column;
-  gap:             6px;
-  color:           inherit;
-  text-decoration: none;
+  display:        flex;
+  flex-direction: column;
+  gap:            6px;
 }
 
-a.home-manifesto__band:hover .home-manifesto__band-name,
-a.home-manifesto__band:focus-visible .home-manifesto__band-name {
-  color: var(--brand-accent);
+.home-manifesto__band-cover {
+  display: block;
+}
+
+.home-manifesto__band-cover:hover .home-manifesto__band-img,
+.home-manifesto__band-cover:focus-visible .home-manifesto__band-img {
+  border-color: var(--brand-accent);
 }
 
 .home-manifesto__band-img {
@@ -483,11 +485,38 @@ a.home-manifesto__band:focus-visible .home-manifesto__band-name {
   border:    1px solid var(--border);
 }
 
+.home-manifesto__band-row {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             6px;
+}
+
 .home-manifesto__band-name {
-  text-align:     center;
   font-size:      11px;
   letter-spacing: 0.08em;
   color:          var(--footer);
+}
+
+.home-manifesto__band-play {
+  flex:           0 0 auto;
+  min-width:      34px;
+  font-family:    inherit;
+  font-size:      10px;
+  line-height:    1;
+  text-align:     center;
+  color:          var(--text);
+  background:     transparent;
+  border:         1px solid var(--border);
+  border-radius:  0;
+  padding:        3px 6px;
+  cursor:         pointer;
+}
+
+.home-manifesto__band-play:hover,
+.home-manifesto__band-play:focus-visible {
+  color:        var(--brand-accent);
+  border-color: var(--brand-accent);
 }
 
 /* === SCANLINES === */

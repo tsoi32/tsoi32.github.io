@@ -132,5 +132,31 @@ ED85E8AA 77DE132D 807E8E90 7038194E
   bindModal('omemo-modal', 'omemo-modal-trigger', 'omemo-modal-close');
 })();
 </script>
+<script>
+(function() {
+  var current = null;
+  document.querySelectorAll('.home-manifesto__band-play').forEach(function(btn) {
+    var audio = new Audio(btn.getAttribute('data-audio'));
+    audio.preload = 'none';
+    audio.addEventListener('ended', function() { btn.textContent = '[>]'; });
+    btn.addEventListener('click', function() {
+      if (current && current.audio !== audio) {
+        current.audio.pause();
+        current.audio.currentTime = 0;
+        current.btn.textContent = '[>]';
+      }
+      if (audio.paused) {
+        audio.play();
+        btn.textContent = '[||]';
+        current = { audio: audio, btn: btn };
+      } else {
+        audio.pause();
+        btn.textContent = '[>]';
+        current = null;
+      }
+    });
+  });
+})();
+</script>
 </body>
 </html>
