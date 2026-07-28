@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="paper-mode">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rich Content Guide | @tsoi32</title>
+  <link rel="icon" type="image/png" href="../../static/favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Rich Content Guide | @tsoi32">
+  <meta property="og:description" content="vá para as montanhas, somente lá! existe a verdadeira paz que você tanto procura, amigo.">
+  <meta property="og:image" content="https://thebixowithsevenheads.wtf/static/media/bit.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Rich Content Guide | @tsoi32">
+  <meta name="twitter:description" content="vá para as montanhas, somente lá! existe a verdadeira paz que você tanto procura, amigo.">
+  <meta name="twitter:image" content="https://thebixowithsevenheads.wtf/static/media/bit.png">
+  <link rel="stylesheet" href="../../static/style.css">
+</head>
+<body class="paper-mode">
+
+<div id="wrapper" class="paper-shell">
+
+  <div class="paper-top-nav">--[ <a class="paper-top-nav__link" href="../../index.html">HOME</a> ]--------------------------------------------------------------------</div>
+
+  <div id="main-col">
+    <pre class="paper-document"><span class="paper-line-bg">     .------------------------------------------------------------------.</span>
+<span class="paper-line-bg">    |                                                                    |</span>
+<span class="paper-line-bg">     |                       R I C H   C O N T E N T                    |</span>
+<span class="paper-line-bg">    |                                                                    |</span>
+<span class="paper-line-bg">     '------------------------------------------------------------------'</span>
+
+
+<span class="paper-line-bg">                         tsoi32 :: referencia interna</span>
+<span class="paper-line-bg">                                  2026-07-28</span>
+
+<span class="paper-line-bg">+============================================================================+</span>
+<span class="paper-line-bg">|                                                                            |</span>
+<span class="paper-line-bg">|                                                                            |</span>
+<span class="paper-line-bg">| RICH CONTENT GUIDE                                                         |</span>
+<span class="paper-line-bg">|                                                                            |</span>
+<span class="paper-line-bg">|                                                                            |</span>
+<span class="paper-line-bg">| Referencia interna do que o build sabe renderizar.                         |</span>
+<span class="paper-line-bg">| by tsoi32 / 2026-07-28                                                     |</span>
+<span class="paper-line-bg">| tags: [demo] [markdown] [referencia]                                       |</span>
+<span class="paper-line-bg">|                                                                            |</span>
+<span class="paper-line-bg">|                                                                            |</span>
+<span class="paper-line-bg">+============================================================================+</span>
+
+<div class="paper-callout paper-callout--summary"><div class="paper-callout__label">Summary</div><pre class="paper-callout__body paper-callout__body--pre">0x40000 - Texto e formatacao inline
+0x40004 - Imagem
+0x40008 - Tabela
+0x4000c - Blocos de codigo
+0x40010 - Ascii art
+0x40014 - Fluxo em ascii</pre></div>
+
+<div class="paper-callout paper-callout--note"><div class="paper-callout__label">NOTE</div><div class="paper-callout__body"><p>Este paper existe so pra eu conferir se o build ainda sabe renderizar cada elemento depois de mexer no CSS. Nao e conteudo de verdade, e referencia interna.</p></div></div>
+
+<div class="paper-callout paper-callout--warn"><div class="paper-callout__label">WARN</div><div class="paper-callout__body"><p>Se algum bloco abaixo sair torto (tabela sem borda, code sem cor, callout sem caixa), e sinal de regressao no build.js ou no style.css.</p></div></div>
+
+<span class="paper-line-bg">Isso aqui e uma citacao comum, sem NOTE nem WARN na frente vira uma caixa</span>
+<span class="paper-line-bg">de quote generica em vez de nota ou aviso.</span>
+
+<span class="paper-line-bg">--[ 0x40000 ]-- [ Texto e formatacao inline ] --------------------------------</span>
+
+<span class="paper-line-bg">Paragrafo comum com negrito, italico e <span class="paper-inline-code paper-inline-code--red">codigo inline</span>. Tambem da pra linkar</span>
+<span class="paper-line-bg">tipo codeberg &lt;https://codeberg.org/tsoi32&gt; no meio do texto.</span>
+
+<span class="paper-line-bg">- item de lista</span>
+<span class="paper-line-bg">- outro item</span>
+<span class="paper-line-bg">  - sub-item de segundo nivel</span>
+<span class="paper-line-bg">- ultimo item</span>
+
+<span class="paper-line-bg">1. primeiro passo</span>
+<span class="paper-line-bg">2. segundo passo</span>
+<span class="paper-line-bg">3. terceiro passo</span>
+
+<span class="paper-line-bg">--[ 0x40004 ]-- [ Imagem ] ---------------------------------------------------</span>
+
+<img src="../../static/media/wesuck.jpg" alt="tela de terminal genérica" class="paper-inline-image" loading="lazy">
+
+<span class="paper-line-bg">--[ 0x40008 ]-- [ Tabela ] ---------------------------------------------------</span>
+
+<div class="paper-table-wrap"><table class="paper-table"><thead><tr><th>linguagem</th><th>ano</th><th>paradigma</th></tr></thead><tbody><tr><td>C</td><td>1972</td><td>procedural</td></tr><tr><td>Lisp</td><td>1958</td><td>funcional</td></tr><tr><td>Rust</td><td>2010</td><td>multi-paradigma</td></tr></tbody></table></div>
+
+<span class="paper-line-bg">--[ 0x4000c ]-- [ Blocos de codigo ] -----------------------------------------</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--c">C</span></div><pre><code class="hljs language-c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}</code></pre></div>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--bash">BASH</span></div><pre><code class="hljs language-bash"><span class="hljs-meta">#!/usr/bin/env bash</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;build ok&quot;</span></code></pre></div>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--python">PYTHON</span></div><pre><code class="hljs language-python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>():
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;build ok&quot;</span>)
+
+<span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:
+    main()</code></pre></div>
+
+<span class="paper-line-bg">--[ 0x40010 ]-- [ Ascii art ] ------------------------------------------------</span>
+
+
+<span class="paper-block-dark">   .--.
+  |o_o |
+  |:_/ |
+ //   \ \
+(|     | )
+/'\_   _/`\
+\___)=(___/</span>
+
+<span class="paper-line-bg">--[ 0x40014 ]-- [ Fluxo em ascii ] -------------------------------------------</span>
+
+
+<span class="paper-block-dark">[ MARKDOWN ]
+      |
+      v
+[ marked.lexer ]
+      |
+      v
+[ renderPaperToken ]
+      |
+      v
+[ escapeHtml + decorate ]
+      |
+      v
+[ PAGINA ]</span><footer class="paper-links-footer">
+  <div class="paper-links-footer__head">+---------------- LINKS ----------------+</div>
+  <div class="paper-links-footer__body">links: <a href="https://codeberg.org/tsoi32">[source]</a></div>
+</footer></pre>
+
+  </div>
+
+  <footer id="site-footer">
+  <div class="footer-separator"></div>
+  <div class="footer-contact"><span>xmpp: in64weTrust@pwned.life</span> <a href="#" id="omemo-modal-trigger" class="footer-link">[ omemo keys &#8594; ]</a>  <span class="footer-sep">|</span>  <span>email: thebixowithsevenheads@getgoogleoff.me</span>  <span class="footer-sep">|</span>  <a href="https://x.com/tsoi32" target="_blank" rel="noopener" class="footer-link">[ x.com/tsoi32 &#8594; ]</a></div>
+  <div class="footer-gifs">
+    <img src="../../static/media/badges/2privacy.gif" alt="2privacy.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/3computer.jpg" alt="3computer.jpg" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/desktop.gif" alt="desktop.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/get_euch.gif" alt="get_euch.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/hatems.png" alt="hatems.png" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/hedied4u.gif" alt="hedied4u.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/linux.gif" alt="linux.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/retrosite.gif" alt="retrosite.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/visitmini.gif" alt="visitmini.gif" loading="lazy" width="88" height="31">
+  </div>
+  
+</footer>
+
+</div>
+  <div id="scanlines"></div>
+<script>
+document.querySelectorAll('.content .pre-wrap').forEach(function(wrap) {
+  var pre = wrap.querySelector('pre');
+  if (!pre) return;
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'copy';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    navigator.clipboard.writeText(code ? code.innerText : pre.innerText).then(function() {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(function() { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+    });
+  });
+  pre.appendChild(btn);
+});
+</script>
+<div id="omemo-modal" aria-hidden="true">
+  <div class="pgp-modal-inner">
+    <div class="panel">
+      <div class="panel-header">
+        <span>OMEMO keys — in64weTrust@pwned.life</span>
+        <span class="window-controls"><span class="wbtn" id="omemo-modal-close">×</span></span>
+      </div>
+      <div class="panel-body"><pre class="omemo-keys"># device 1
+
+D1FD187B 71E50AD6 64C71535 D9C6F8F6
+B690A7B9 9C433017 10A639AF F61F9E45
+
+# device 2
+
+C862E858 EB49648C 57B44D97 4CD71D28
+ED85E8AA 77DE132D 807E8E90 7038194E
+</pre></div>
+    </div>
+  </div>
+</div>
+<script>
+(function() {
+  var _openModals = 0;
+  function bindModal(modalId, triggerId, closeBtnId) {
+    var modal    = document.getElementById(modalId);
+    var trigger  = document.getElementById(triggerId);
+    var closeBtn = document.getElementById(closeBtnId);
+    if (!modal || !trigger) return;
+    trigger.addEventListener('click', function(e) {
+      e.preventDefault();
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      _openModals++;
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflowY = 'hidden';
+    });
+    modal.addEventListener('click', function(e) { if (e.target === modal) close(); });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+    function close() {
+      if (!modal.classList.contains('active')) return;
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      _openModals = Math.max(0, _openModals - 1);
+      if (_openModals === 0) { document.body.style.overflow = ''; document.documentElement.style.overflowY = ''; }
+    }
+  }
+  bindModal('omemo-modal', 'omemo-modal-trigger', 'omemo-modal-close');
+})();
+</script>
+<script>
+(function() {
+  var current = null;
+  document.querySelectorAll('.home-manifesto__band-play').forEach(function(btn) {
+    var audio = new Audio(btn.getAttribute('data-audio'));
+    audio.preload = 'none';
+    audio.addEventListener('ended', function() { btn.textContent = '[>]'; });
+    btn.addEventListener('click', function() {
+      if (current && current.audio !== audio) {
+        current.audio.pause();
+        current.audio.currentTime = 0;
+        current.btn.textContent = '[>]';
+      }
+      if (audio.paused) {
+        audio.play();
+        btn.textContent = '[||]';
+        current = { audio: audio, btn: btn };
+      } else {
+        audio.pause();
+        btn.textContent = '[>]';
+        current = null;
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

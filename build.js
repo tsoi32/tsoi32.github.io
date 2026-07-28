@@ -800,14 +800,15 @@ function renderPaperCover(meta, width) {
   const metaLine = authorBits.join(' / ');
   const tags = Array.isArray(meta.tags) ? meta.tags : (meta.tags ? [meta.tags] : []);
   const tagLine = tags.length ? `tags: ${tags.map(t => `[${toAscii(t)}]`).join(' ')}` : '';
+  const textWidth = Math.max(20, width - 4);
   const lines = [];
-  if (title) lines.push(title);
+  if (title) lines.push(...wrapAsciiText(title, textWidth));
   if (subtitle) {
     if (title) lines.push('', '');
-    lines.push(subtitle);
+    lines.push(...wrapAsciiText(subtitle, textWidth));
   }
-  if (metaLine) lines.push(metaLine);
-  if (tagLine) lines.push(tagLine);
+  if (metaLine) lines.push(...wrapAsciiText(metaLine, textWidth));
+  if (tagLine) lines.push(...wrapAsciiText(tagLine, textWidth));
   const out = [];
   if (cover && cover.art) {
     out.push(...buildAsciiArtLines(cover.art, { width, align: cover.align || 'center' }));
@@ -1215,7 +1216,7 @@ const CONFIG = {
   siteSubtitle: 'reflexões e aprendizados',
   siteUrl:      'https://thebixowithsevenheads.wtf',
   ogDescription: 'vá para as montanhas, somente lá! existe a verdadeira paz que você tanto procura, amigo.',
-  ogImagePath:  'static/media/guns-meme.jpg',
+  ogImagePath:  'static/media/bit.png',
 };
 
 const SITE_ASCII_TITLE = `Цой32`;
@@ -1651,7 +1652,7 @@ function wrapInBase(body, opts) {
     siteChrome,
     body,
     breadcrumb: opts.breadcrumb || '',
-    footer:     generateFooter(opts.root || '', cfg),
+    footer:     generateFooter(opts.root || '', cfg, opts.footerExtra || ''),
     omemoModal: buildOmemoModal(),
     pageMascot: opts.pageMascot || '',
   });
@@ -1708,7 +1709,7 @@ function generateGifcities(root, cfg) {
   return `<div class="footer-gifs">\n    ${imgs}\n  </div>`;
 }
 
-function generateFooter(root, cfg) {
+function generateFooter(root, cfg, extra) {
   if (!cfg) cfg = {};
   const parts = [];
   if (cfg.xmpp) {
@@ -1727,6 +1728,7 @@ function generateFooter(root, cfg) {
   <div class="footer-separator"></div>
   <div class="footer-contact">${contactHtml}</div>
   ${gifsHtml}
+  ${extra || ''}
 </footer>`;
 }
 
@@ -1745,21 +1747,12 @@ function renderTaggedPostsSection(items, root) {
   return `<hr style="border-top:1px solid var(--border);margin:20px 0 14px">` + treeHtml;
 }
 
-function renderHomeHero(posts, notes) {
-  const latestItems = sortArchiveItems(posts || []);
-  const latestDate = latestItems.length ? String(latestItems[0].meta.date || '') : '';
-  const paperCount = Array.isArray(posts) ? posts.length : 0;
-  const paperLabel = paperCount === 1 ? 'paper' : 'papers';
-  return `<header class="home-hero">
-  <div class="home-hero__kicker">root / index</div>
+function renderHomeHeroRight() {
+  return `<header class="home-hero home-hero--right">
   <div class="home-hero__markline" aria-hidden="true">
     <span class="home-hero__rule"></span>
     <span class="home-hero__brand">Цой<span class="home-hero__brand-accent">32</span></span>
     <span class="home-hero__rule"></span>
-  </div>
-  <div class="home-hero__meta">
-    <span>${paperCount} ${paperLabel}</span>
-    ${latestDate ? `<span class="home-hero__meta-sep" aria-hidden="true">|</span><span>updated ${escapeHtml(latestDate)}</span>` : ''}
   </div>
 </header>`;
 }
@@ -1817,7 +1810,7 @@ function renderHomeFeed(posts, notes) {
       }).join('\n')
     : `<li class="home-feed__empty">no entries yet.</li>`;
 
-  return `<section class="home-feed home-feed--issue" aria-label="contents">
+  return `<div class="home-feed home-feed--issue" aria-label="contents">
   <div class="home-feed__side home-feed__side--left" aria-hidden="true"><span class="sr-only">thebixowithsevenheads</span><span class="home-feed__side-text">${renderTonedText('thebixowithsevenheads', { baseClass: 'home-feed__side-char', shouldTone: ch => /[A-Za-z]/.test(ch) })}</span></div>
   <div class="home-feed__side home-feed__side--right" aria-hidden="true"><span class="sr-only">thebixowithsevenheads</span><span class="home-feed__side-text">${renderTonedText('thebixowithsevenheads', { baseClass: 'home-feed__side-char', shouldTone: ch => /[A-Za-z]/.test(ch) })}</span></div>
   <div class="home-feed__head">
@@ -1827,22 +1820,34 @@ function renderHomeFeed(posts, notes) {
   <ol class="home-feed__list">
 ${items}
   </ol>
-</section>`;
+</div>`;
+}
+
+function renderWindowFrame(title, bodyHtml, { meta = '', flush = false } = {}) {
+  return `<div class="home-window">
+  <div class="window-titlebar">
+    <span>${title}</span>
+    <span class="window-titlebar__meta">
+      ${meta}
+      <span class="window-controls"><span class="wbtn">×</span></span>
+    </span>
+  </div>
+  <div class="window-body${flush ? ' window-body--flush' : ''}">
+    ${bodyHtml}
+  </div>
+</div>`;
 }
 
 function renderHomeManifesto() {
-  const image = `<img src="static/media/guns-meme.jpg" alt="" class="home-manifesto__image" loading="lazy" width="648" height="960">
-  <div class="home-manifesto__image-caption">bitkill.png</div>`;
+  const image = `<img src="static/media/bit.png" alt="" class="home-manifesto__image" loading="lazy" width="1254" height="1137">`;
   const bands = [
-    { file: 'band-kino.png',    name: 'КИНО',        url: 'https://kino.band/muzyka/gruppa-krovi.html', preview: 'preview-kino.mp3' },
-    { file: 'band-molchat.jpg', name: 'МОЛЧАТ ДОМА', url: 'https://molchatdoma.com/music',               preview: 'preview-molchat.mp3' },
+    { file: 'band-kino.png',    name: 'КИНО',        preview: 'preview-kino.mp3' },
+    { file: 'band-molchat.jpg', name: 'МОЛЧАТ ДОМА', preview: 'preview-molchat.mp3' },
   ];
   const bandsGrid = `<div class="home-manifesto__bands">
 ${bands.map(b => {
     const img = `<img src="static/media/${b.file}" alt="${escapeHtml(b.name)}" class="home-manifesto__band-img" loading="lazy">`;
-    const cover = b.url
-      ? `<a class="home-manifesto__band-cover" href="${escapeHtml(b.url)}" target="_blank" rel="noopener noreferrer">${img}</a>`
-      : img;
+    const cover = `<div class="home-manifesto__band-cover">${img}</div>`;
     const play = b.preview
       ? `<button type="button" class="home-manifesto__band-play" data-audio="static/media/${escapeHtml(b.preview)}" aria-label="tocar prévia de ${escapeHtml(b.name)}">[&gt;]</button>`
       : '';
@@ -1855,13 +1860,9 @@ ${bands.map(b => {
   </div>`;
   }).join('\n')}
 </div>`;
-  const divider = `<div class="home-manifesto__divider" aria-hidden="true">${'-'.repeat(40)}</div>`;
-  const bandsTitle = `<div class="home-manifesto__bands-title" lang="ar" dir="rtl">أفضل الفرق الموسيقية</div>`;
-  return `<section class="home-manifesto home-manifesto--image">
-  ${image}
-</section>
-${divider}
-<section class="home-manifesto home-manifesto--bands">
+  const bandsTitle = `<div class="home-manifesto__bands-title" lang="ru">Лучшие песни!</div>`;
+  return renderWindowFrame('bitkill.png', image, { flush: true })
+    + `<section class="home-manifesto home-manifesto--bands">
   ${bandsTitle}
   ${bandsGrid}
 </section>`;
@@ -1954,14 +1955,10 @@ function generatePostPage(post, allPosts, outDir, root, topicsMap, opts = {}) {
   const effectiveRoot = opts.dirName ? root + '../' : root;
   const paperTpl = readTemplate('paper');
   const paperText = renderPaperDocument(post);
-  const paperHtml = decoratePaperDocumentHtml(escapeHtml(paperText), effectiveRoot);
-  const bannerFile = post.meta.banner || '';
-  const bannerHtml = bannerFile
-    ? `<div class="paper-banner-wrap"><img src="${effectiveRoot}static/media/${escapeHtml(bannerFile)}" alt="" class="paper-banner" loading="lazy"></div>`
-    : '';
+  const paperHtml = decoratePaperDocumentHtml(escapeHtml(paperText), effectiveRoot) + renderPostFooter(post);
   const body = renderTemplate(paperTpl, {
     content: paperHtml,
-  }) + bannerHtml;
+  });
   const html = wrapInBase(body, {
     pageTitle: post.meta.title || post.slug,
     rawTitle: `${post.meta.title || post.slug} | @${post.meta.author || CONFIG.siteTitle}`,
@@ -1969,8 +1966,6 @@ function generatePostPage(post, allPosts, outDir, root, topicsMap, opts = {}) {
     bodyClass: 'paper-mode',
     wrapperClass: 'paper-shell',
     siteChrome: renderPaperTopNav(effectiveRoot),
-    pageMascot: opts.mascot ? renderPageMascot(effectiveRoot) : '',
-    ogImage: bannerFile ? `${CONFIG.siteUrl}/static/media/${bannerFile}` : undefined,
   });
   if (opts.dirName) {
     const pageDir = path.join(outDir, opts.dirName);
@@ -2054,10 +2049,14 @@ function generateCategoryPage(label, posts, matchTags, outDir, root) {
 function generateHomePage(posts, notes, topics, themes) {
   const indexTpl = readTemplate('index');
   const body     = renderTemplate(indexTpl, {
-    homeHero: renderHomeHero(posts, notes),
+    homeHeroRight: renderHomeHeroRight(),
     homeFeed: renderHomeFeed(posts, notes),
     homeManifesto: renderHomeManifesto(),
   });
+
+  const latestItems = sortArchiveItems(posts || []);
+  const latestDate = latestItems.length ? String(latestItems[0].meta.date || '') : '';
+  const footerExtra = latestDate ? `<div class="footer-updated">updated ${escapeHtml(latestDate)}</div>` : '';
 
   const html = wrapInBase(body, {
     rawTitle: `@tsoi32 | @${SITE_ASCII_TITLE}`,
@@ -2065,6 +2064,7 @@ function generateHomePage(posts, notes, topics, themes) {
     bodyClass: 'home-mode',
     wrapperClass: 'home-shell',
     siteChrome: '',
+    footerExtra,
   });
   fs.writeFileSync(path.join('docs', 'index.html'), html);
 }
@@ -2132,7 +2132,6 @@ function main() {
   for (const post of posts) {
     if (post.meta.locked !== 'true') {
       generatePostPage(post, posts, path.join('docs', 'p'), '../', topicsMap, {
-        mascot: true,
         dirName: paperDirName(post.slug, paperChronoIndex),
       });
     }
@@ -2183,7 +2182,7 @@ module.exports = {
   wrapInBase, renderWidgetList, generateGifcities, generateFooter, asciiTitle,
   renderPostCard, renderPostRow, renderPostTable, sortArchiveItems, groupArchiveItems, renderArchiveTree, renderPostFrontmatter, renderAsciiToc, renderPostFooter,
   renderPaperDocument, renderPaperTopNav,
-  renderHomeHero, renderHomeFeed, renderHomeManifesto, renderHomeRail,
+  renderHomeHeroRight, renderHomeFeed, renderHomeManifesto, renderHomeRail,
   readTopics, renderTopicsSection, generateTopicPage,
   generatePostPage, generateListPage, generateCategoryPage, generateStaticPage, generateHomePage,
   wrapAsciiText,

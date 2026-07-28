@@ -46,7 +46,6 @@ links:
 | `locked` | `true`/`false` | nao | Se `true`, o item pode aparecer em listas, mas sem link. |
 | `pinned` | `true`/`false` | nao | Se `true`, sobe o item na listagem. |
 | `new` | `true`/`false` | nao | Se `true`, mostra a tag `[NEW]` (arco-iris animado) na listagem. |
-| `banner` | string | nao | Nome do arquivo em `media/` (ex: `banner: foto.jpg`). Aparece fixo no espaco vazio a direita da pagina do paper. Se definido, tambem vira a imagem de og:image/twitter:image desse paper (em vez da imagem padrao do site). |
 
 ## `cover`
 
