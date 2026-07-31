@@ -2167,6 +2167,7 @@ function main() {
   copyStatic();
   fs.writeFileSync(path.join('docs', '.nojekyll'), '');
   fs.writeFileSync(path.join('docs', '.domains'), 'thebixowithsevenheads.wtf\ntsoi32.codeberg.page\npages.tsoi32.codeberg.page\n');
+  fs.writeFileSync(path.join('docs', 'CNAME'), 'thebixowithsevenheads.wtf\n');
 
   const posts  = readMarkdownFiles('src/posts');
   const notes  = readMarkdownFiles('src/notes');
