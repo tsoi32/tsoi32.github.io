@@ -20,18 +20,16 @@ marked.setOptions({
 
 function toAscii(text) {
   return String(text || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^\x00-\x7F]/g, '')
+    .normalize('NFC')
+    .replace(/[^\x00-\x7F\u00c0-\u00ff]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 function toAsciiLine(text) {
   return String(text || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^\x00-\x7F]/g, '')
+    .normalize('NFC')
+    .replace(/[^\x00-\x7F\u00c0-\u00ff]/g, '')
     .replace(/\r/g, '');
 }
 
@@ -52,6 +50,10 @@ const PAPER_TABLE_OPEN = '\x10';
 const PAPER_TABLE_CLOSE = '\x11';
 const PAPER_SUMMARY_OPEN = '\x12';
 const PAPER_SUMMARY_CLOSE = '\x13';
+const PAPER_LINK_OPEN = '\x14';
+const PAPER_LINK_SEP = '\x15';
+const PAPER_LINK_CLOSE = '\x16';
+const PAPER_BREAK = '\x17';
 
 const HLJS_LANG_ALIASES = {
   asm: 'x86asm',
@@ -127,6 +129,14 @@ function resolvePaperImageSrc(src, root) {
   return `${root || ''}static/media/${safeSrc}`;
 }
 
+function resolvePaperLinkHref(href, root) {
+  const safe = String(href || '');
+  if (/^[a-z][a-z0-9+.-]*:/i.test(safe) || safe.startsWith('//') || safe.startsWith('/') || safe.startsWith('#')) {
+    return safe;
+  }
+  return `${root || ''}${safe}`;
+}
+
 function paperVisibleLength(text) {
   return String(text || '')
     .normalize('NFD')
@@ -134,6 +144,7 @@ function paperVisibleLength(text) {
     .replace(/[^\x00-\x7F]/g, '')
     .replace(/\r/g, '')
     .replace(/[\x1e\x1f]/g, '')
+    .replace(/\x14[^\x15]*\x15([^\x16]*)\x16/g, '$1')
     .replace(/`/g, '')
     .length;
 }
@@ -193,40 +204,49 @@ function wrapAsciiText(text, width) {
   const source = toAscii(text);
   const words = [];
   let buffer = '';
+  let bufferProtected = false;
   let protectedMode = false;
+  let expectedClose = '';
+
+  const flushBuffer = () => {
+    if (buffer) {
+      words.push({ text: buffer, protected: bufferProtected });
+      buffer = '';
+      bufferProtected = false;
+    }
+  };
 
   for (let i = 0; i < source.length; i++) {
     const ch = source[i];
-    if (ch === PAPER_INLINE_OPEN) {
-      if (buffer) {
-        words.push({ text: buffer, protected: false });
-        buffer = '';
-      }
+    if (!protectedMode && (ch === PAPER_INLINE_OPEN || ch === PAPER_LINK_OPEN)) {
       protectedMode = true;
+      bufferProtected = true;
+      expectedClose = ch === PAPER_INLINE_OPEN ? PAPER_INLINE_CLOSE : PAPER_LINK_CLOSE;
       buffer += ch;
       continue;
     }
-    if (ch === PAPER_INLINE_CLOSE && protectedMode) {
+    if (protectedMode && ch === expectedClose) {
       buffer += ch;
-      words.push({ text: buffer, protected: true });
-      buffer = '';
       protectedMode = false;
+      expectedClose = '';
       continue;
     }
     if (protectedMode) {
       buffer += ch;
       continue;
     }
+    if (ch === PAPER_BREAK) {
+      flushBuffer();
+      words.push({ text: '', protected: false, isBreak: true });
+      continue;
+    }
     if (/\s/.test(ch)) {
-      if (buffer) {
-        words.push({ text: buffer, protected: false });
-        buffer = '';
-      }
+      flushBuffer();
       continue;
     }
     buffer += ch;
   }
-  if (buffer) words.push({ text: buffer, protected: protectedMode });
+  flushBuffer();
   if (!words.length) return [''];
 
   const lines = [];
@@ -235,7 +255,8 @@ function wrapAsciiText(text, width) {
   function joinTokens(left, right) {
     if (!left) return right;
     if (/^[,.;:!?)]$/.test(right)) return left + right;
-    if (/(?<!\s)[([{\-\/]$/.test(left)) return left + right;
+    if (/[([{]$/.test(left)) return left + right;
+    if (/(?<!\s)[\-\/]$/.test(left)) return left + right;
     return `${left} ${right}`;
   }
 
@@ -260,6 +281,11 @@ function wrapAsciiText(text, width) {
   }
 
   for (const word of words) {
+    if (word.isBreak) {
+      lines.push(current);
+      current = '';
+      continue;
+    }
     const value = word.text;
     if (!current) {
       if (word.protected || paperVisibleLength(value) <= width) {
@@ -474,13 +500,13 @@ function flattenInlineTokens(tokens) {
     if (!token) continue;
     switch (token.type) {
       case 'text':
-        parts.push(token.text || token.raw || '');
+        parts.push(decodeHtmlEntities(token.text || token.raw || ''));
         break;
       case 'escape':
-        parts.push(token.text || token.raw || '');
+        parts.push(decodeHtmlEntities(token.text || token.raw || ''));
         break;
       case 'codespan':
-        parts.push(PAPER_INLINE_OPEN + (token.text || '').replace(/\s+/g, ' ').trim() + PAPER_INLINE_CLOSE);
+        parts.push(PAPER_INLINE_OPEN + decodeHtmlEntities(token.text || '').replace(/\s+/g, ' ').trim() + PAPER_INLINE_CLOSE);
         break;
       case 'strong':
       case 'em':
@@ -492,26 +518,24 @@ function flattenInlineTokens(tokens) {
         const href = token.href || '';
         if (!href) {
           parts.push(label);
-        } else if (label && label !== href) {
-          parts.push(`${label} <${href}>`);
         } else {
-          parts.push(href);
+          parts.push(PAPER_LINK_OPEN + href + PAPER_LINK_SEP + (label || href) + PAPER_LINK_CLOSE);
         }
         break;
       }
       case 'image': {
-        const alt = toAscii(token.text || '');
+        const alt = toAscii(decodeHtmlEntities(token.text || ''));
         if (alt) parts.push(`[image: ${alt}]`);
         break;
       }
       case 'br':
-        parts.push('\n');
+        parts.push(PAPER_BREAK);
         break;
       default:
         if (Array.isArray(token.tokens)) {
           parts.push(flattenInlineTokens(token.tokens));
         } else {
-          parts.push(token.text || token.raw || '');
+          parts.push(decodeHtmlEntities(token.text || token.raw || ''));
         }
     }
   }
@@ -519,16 +543,16 @@ function flattenInlineTokens(tokens) {
 }
 
 function formatPaperHeadingNumber(offset) {
-  return `0x${offset.toString(16).padStart(4, '0')}`;
+  return `0x${offset.toString(16).padStart(2, '0')}`;
 }
 
-function collectHeadingOutline(tokens, state = { offset: 0x40000 }, outline = []) {
+function collectHeadingOutline(tokens, state = { offset: 1 }, outline = []) {
   for (const token of tokens || []) {
     if (!token) continue;
     if (token.type === 'heading') {
       const depth = Math.max(1, Math.min(6, token.depth || 1));
       const number = formatPaperHeadingNumber(state.offset);
-      state.offset += 4;
+      state.offset += 1;
       token._paperNumber = number;
       outline.push({ depth, number, text: flattenInlineTokens(token.tokens || [{ text: token.text || '' }]) });
     }
@@ -609,14 +633,18 @@ function renderParagraphBlock(token, width, indent = '') {
 function renderImageBlock(imgToken) {
   const payload = Buffer.from(JSON.stringify({
     src: imgToken.href || '',
-    alt: imgToken.text || '',
+    alt: decodeHtmlEntities(imgToken.text || ''),
   }), 'utf8').toString('base64');
   return [PAPER_IMAGE_OPEN + payload + PAPER_IMAGE_CLOSE];
 }
 
 function renderCodeBlock(token, width, indent = '') {
-  const rawLines = String(token.text || '').replace(/\r/g, '').split('\n').map(toAsciiLine);
   const lang = String(token.lang || '').trim().toLowerCase();
+  if (['ascii', 'art'].includes(lang)) {
+    const artLines = String(token.text || '').replace(/\r/g, '').split('\n');
+    return artLines.map(line => indent + line);
+  }
+  const rawLines = String(token.text || '').replace(/\r/g, '').split('\n').map(toAsciiLine);
   if (['txt', 'text', 'plain', 'plaintext'].includes(lang)) {
     return wrapDarkBlock(rawLines.map(line => indent + line));
   }
@@ -649,7 +677,7 @@ function renderBlockquoteBlock(token, width, depth = 0) {
   const firstText = firstParagraph
     ? flattenInlineTokens(firstParagraph.tokens || [{ text: firstParagraph.text || '' }])
     : '';
-  const labelMatch = firstText.match(/^(NOTE|WARN|INFO):\s*/i);
+  const labelMatch = firstText.match(/^(NOTE|WARN|INFO):[\s\x17]*/i);
 
   if (labelMatch) {
     const kind = labelMatch[1].toUpperCase();
@@ -661,10 +689,11 @@ function renderBlockquoteBlock(token, width, depth = 0) {
       } else if (child.type === 'list') {
         parts.push(renderListBlock(child, width - 4, 0).join('\n'));
       } else if (child.type === 'code') {
-        parts.push(renderCodeBlock(child, width - 4, '').join('\n'));
+        const rawLines = String(child.text || '').replace(/\r/g, '').split('\n').map(toAsciiLine);
+        parts.push(rawLines.join(PAPER_BREAK));
       }
     }
-    const body = parts.join('\n\n').trim().replace(/^(NOTE|WARN|INFO):\s*/i, '');
+    const body = parts.join('\n\n').trim().replace(/^(NOTE|WARN|INFO):[\s\x17]*/i, '');
     const payload = Buffer.from(JSON.stringify({ kind, body }), 'utf8').toString('base64');
     return [indent + PAPER_CALLOUT_OPEN + payload + PAPER_CALLOUT_CLOSE];
   }
@@ -718,16 +747,14 @@ function renderPaperBody(body, opts = {}) {
   const tokens = marked.lexer(body || '', {
     gfm: true,
     tables: true,
+    breaks: true,
   });
   const outline = collectHeadingOutline(tokens);
   const blocks = [];
-  let skipNextLeadingGap = false;
 
   const pushBlock = (lines) => {
     if (!lines || !lines.length) return;
-    if (blocks.length && !skipNextLeadingGap) blocks.push('');
     blocks.push(...lines);
-    skipNextLeadingGap = false;
   };
 
   const pushPaddedBlock = (lines, before = 0, after = 0) => {
@@ -735,7 +762,6 @@ function renderPaperBody(body, opts = {}) {
     for (let i = 0; i < before; i++) blocks.push('');
     blocks.push(...lines);
     for (let i = 0; i < after; i++) blocks.push('');
-    skipNextLeadingGap = true;
   };
 
   const pushTitledBlock = (lines, depth = 1) => {
@@ -743,14 +769,21 @@ function renderPaperBody(body, opts = {}) {
     if (blocks.length && blocks[blocks.length - 1] !== '') blocks.push('');
     blocks.push(...lines);
     blocks.push('');
-    skipNextLeadingGap = true;
   };
 
   pushBlock(renderPaperCover(opts.meta || {}, width));
   if (outline.length) {
+    if (blocks.length) blocks.push('');
     pushBlock(renderPaperSummary(outline, width));
   }
+  const MAX_GAP = 6;
   for (const token of tokens) {
+    if (token.type === 'space') {
+      const blankLines = Math.max(0, (String(token.raw || '').match(/\n/g) || []).length - 1);
+      const total = Math.min(MAX_GAP, blankLines);
+      for (let i = 0; i < total; i++) blocks.push('');
+      continue;
+    }
     const lines = renderPaperToken(token, { width });
     if (!lines.length) continue;
     if (token.type === 'heading') pushTitledBlock(lines, token.depth || 1);
@@ -779,7 +812,7 @@ function renderPaperBody(body, opts = {}) {
   return withLineBg.join('\n').replace(/\n{6,}/g, '\n\n\n\n\n').trimEnd();
 }
 
-function renderPaperTopNav(root = '', width = 78) {
+function renderPaperTopNav(root = '', width = 130) {
   const prefix = '--[ ';
   const label = 'HOME';
   const suffix = ' ]';
@@ -810,7 +843,7 @@ function renderPaperCover(meta, width) {
   if (metaLine) lines.push(...wrapAsciiText(metaLine, textWidth));
   if (tagLine) lines.push(...wrapAsciiText(tagLine, textWidth));
   const out = [];
-  if (cover && cover.art) {
+  if (cover && cover.art && !cover.image) {
     out.push(...buildAsciiArtLines(cover.art, { width, align: cover.align || 'center' }));
     const bannerLines = [];
     if (cover.caption) bannerLines.push(...buildAsciiCenteredLines(cover.caption, width));
@@ -820,7 +853,7 @@ function renderPaperCover(meta, width) {
       out.push('');
       out.push(...bannerLines);
     }
-    if (cover.art || bannerLines.length) out.push('');
+    out.push('');
   }
   if (!cover || !cover.hideTitle) {
     if (lines.length) {
@@ -837,18 +870,25 @@ function renderPaperCover(meta, width) {
   return out;
 }
 
+function artFromValue(v) {
+  if (Array.isArray(v)) return v.map(String).join('\n');
+  if (typeof v === 'string') return v;
+  return '';
+}
+
 function readPaperCover(meta) {
   const raw = meta && meta.cover;
   if (!raw) return null;
-  if (typeof raw === 'string') {
-    return { art: raw, caption: '', hideTitle: false, align: 'center' };
+  if (typeof raw === 'string' || Array.isArray(raw)) {
+    return { art: artFromValue(raw), image: '', caption: '', hideTitle: false, align: 'center' };
   }
   if (!raw || typeof raw !== 'object') return null;
   const hideTitle = raw.hideTitle === true || raw.hideTitle === 'true' || raw.hideTitle === '1';
   const align = typeof raw.align === 'string' && raw.align.trim() ? raw.align.trim().toLowerCase() : 'center';
-  const art = typeof raw.art === 'string' ? raw.art : (typeof raw.logo === 'string' ? raw.logo : '');
+  const image = typeof raw.image === 'string' ? raw.image.trim() : '';
+  const art = artFromValue(raw.art) || artFromValue(raw.logo);
   const caption = typeof raw.caption === 'string' ? raw.caption : '';
-  return { art, caption, hideTitle, align };
+  return { art, image, caption, hideTitle, align };
 }
 
 function renderPaperSummary(entries, width) {
@@ -864,7 +904,7 @@ function renderPaperSummary(entries, width) {
 }
 
 function renderPaperDocument(post, body = post.body || '') {
-  return renderPaperBody(body, { meta: post.meta || {}, width: 78 });
+  return renderPaperBody(body, { meta: post.meta || {}, width: 130 });
 }
 
 function decodeHtmlEntities(text) {
@@ -875,6 +915,7 @@ function decodeHtmlEntities(text) {
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
     .replace(/&#(\d+);/g, (_, n) => {
       const code = Number(n);
       return Number.isFinite(code) ? String.fromCharCode(code) : '';
@@ -1319,7 +1360,7 @@ function decoratePaperDocumentHtml(html, root = '') {
         const kindClass = kind.toLowerCase();
         const paragraphs = body
           .split(/\n\n+/)
-          .map(p => `<p>${escapeHtml(p.trim())}</p>`)
+          .map(p => `<p>${escapeHtml(p.trim()).replace(/\x17/g, '<br>')}</p>`)
           .join('');
         return `<div class="paper-callout paper-callout--${kindClass}"><div class="paper-callout__label">${escapeHtml(kind)}</div><div class="paper-callout__body">${paragraphs}</div></div>`;
       } catch (e) {
@@ -1348,6 +1389,10 @@ function decoratePaperDocumentHtml(html, root = '') {
     });
   out = convertPaperTokenMarkers(out);
   out = out
+    .replace(/\x14([^\x15]*)\x15([^\x16]*)\x16/g, (_, href, label) => {
+      const resolvedHref = resolvePaperLinkHref(href, root);
+      return `<a href="${resolvedHref}" class="paper-link">${label}</a>`;
+    })
     .replace(/\x1f([^\x1e]*?)\x1e/g, (_, code) => {
       return `<span class="paper-inline-code paper-inline-code--red">${code}</span>`;
     })
@@ -1959,6 +2004,10 @@ function generatePostPage(post, allPosts, outDir, root, topicsMap, opts = {}) {
   const body = renderTemplate(paperTpl, {
     content: paperHtml,
   });
+  const cover = readPaperCover(post.meta || {});
+  const ogImage = cover && cover.image
+    ? `${CONFIG.siteUrl}/${resolvePaperImageSrc(cover.image, '').replace(/^\/+/, '')}`
+    : undefined;
   const html = wrapInBase(body, {
     pageTitle: post.meta.title || post.slug,
     rawTitle: `${post.meta.title || post.slug} | @${post.meta.author || CONFIG.siteTitle}`,
@@ -1966,6 +2015,7 @@ function generatePostPage(post, allPosts, outDir, root, topicsMap, opts = {}) {
     bodyClass: 'paper-mode',
     wrapperClass: 'paper-shell',
     siteChrome: renderPaperTopNav(effectiveRoot),
+    ogImage,
   });
   if (opts.dirName) {
     const pageDir = path.join(outDir, opts.dirName);

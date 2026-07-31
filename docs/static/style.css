@@ -25,13 +25,13 @@
   --quote:      #eaeaea;
   --footer:     #b8b8b8;
 
-  --code-bg:        var(--bg);
+  --code-bg:        #000000;
   --code-text:      #e8e8e8;
   --code-red:       #ff3333;
   --code-red-light: #ff6666;
   --code-muted:     #777777;
   --code-border:    #a8a8a8;
-  --code-title-bg:  var(--bg);
+  --code-title-bg:  #000000;
 
   --callout-note-bright: #c084fc;
   --callout-warn-bright: #ff4d4d;
@@ -80,10 +80,16 @@ a:hover { color: inherit; }
 }
 
 body.paper-mode #wrapper {
-  max-width: 1143px;
+  max-width: none;
   margin:    0;
   padding:   18px 14px 24px;
   background: transparent;
+}
+
+@media (max-width: 1600px) {
+  body.paper-mode #wrapper {
+    max-width: 1400px;
+  }
 }
 
 body.paper-mode #main-col {
@@ -102,7 +108,7 @@ body.home-mode #wrapper.home-shell {
 
 .home-split {
   display: grid;
-  grid-template-columns: minmax(18ch, 0.56fr) minmax(0, 1.8fr);
+  grid-template-columns: minmax(20ch, 0.66fr) minmax(0, 1.8fr);
 }
 
 .home-split__col {
@@ -141,7 +147,7 @@ body.home-mode #wrapper.home-shell {
 
 .home-hero__brand {
   white-space:   nowrap;
-  font-size:     clamp(28px, 4vw, 56px);
+  font-size:     clamp(32px, 4.6vw, 68px);
   line-height:   0.95;
   font-weight:   700;
   letter-spacing:-0.06em;
@@ -154,13 +160,13 @@ body.home-mode #wrapper.home-shell {
 
 .home-hero__strap {
   max-width:   58ch;
-  font-size:   13px;
+  font-size:   16px;
   line-height: 1.55;
   color:       var(--text);
 }
 
 .home-hero__meta {
-  font-size:      11px;
+  font-size:      13px;
   line-height:    1.4;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -237,14 +243,14 @@ body.home-mode #wrapper.home-shell {
 
 .home-feed__label {
   color:          var(--text-muted);
-  font-size:      11px;
+  font-size:      13px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 
 .home-feed__count {
   color:          var(--text-muted);
-  font-size:      11px;
+  font-size:      13px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
@@ -262,7 +268,7 @@ body.home-mode #wrapper.home-shell {
   align-items:     baseline;
   column-gap:      10px;
   line-height:     1.3;
-  font-size:       14px;
+  font-size:       17px;
 }
 
 .home-feed__flags-cell {
@@ -272,7 +278,7 @@ body.home-mode #wrapper.home-shell {
 
 .home-feed__index {
   color:          var(--text-muted);
-  font-size:      11px;
+  font-size:      13px;
   letter-spacing: 0.14em;
   white-space:    nowrap;
 }
@@ -324,7 +330,7 @@ body.home-mode #wrapper.home-shell {
 
 .home-feed__meta {
   color:          var(--text-muted);
-  font-size:      11px;
+  font-size:      13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space:    nowrap;
@@ -342,7 +348,7 @@ body.home-mode #wrapper.home-shell {
 
 .home-feed__flag {
   color:          var(--brand-accent);
-  font-size:      11px;
+  font-size:      13px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   white-space:    nowrap;
@@ -365,7 +371,7 @@ body.home-mode #wrapper.home-shell {
 
 .home-feed__empty {
   color:       var(--text-muted);
-  font-size:   13px;
+  font-size:   16px;
   line-height: 1.5;
 }
 
@@ -382,7 +388,7 @@ body.home-mode #wrapper.home-shell {
 
 .home-manifesto__bands-title {
   text-align:     center;
-  font-size:      14px;
+  font-size:      17px;
   font-weight:    700;
   color:          var(--text);
 }
@@ -422,7 +428,7 @@ body.home-mode #wrapper.home-shell {
 }
 
 .home-manifesto__band-name {
-  font-size:      11px;
+  font-size:      13px;
   letter-spacing: 0.08em;
   color:          var(--footer);
 }
@@ -431,7 +437,7 @@ body.home-mode #wrapper.home-shell {
   flex:           0 0 auto;
   min-width:      34px;
   font-family:    inherit;
-  font-size:      10px;
+  font-size:      12px;
   line-height:    1;
   text-align:     center;
   color:          var(--text);
@@ -713,7 +719,7 @@ body.home-mode #wrapper.home-shell {
   align-items:     center;
   border-bottom:   1px solid var(--border);
   color:           var(--text);
-  font-size:       12px;
+  font-size:       13px;
   font-weight:     700;
   letter-spacing:  0.1em;
   padding:         3px 8px;
@@ -742,7 +748,7 @@ body.home-mode #wrapper.home-shell {
   margin:      0;
   border:      1px solid var(--code-border);
   background:  var(--code-bg);
-  max-width:   min(760px, 100%);
+  max-width:   100%;
   box-sizing:  border-box;
   white-space: normal;
   font-family: inherit;
@@ -1105,11 +1111,24 @@ blockquote[data-type="quote"] .ascii-callout { color: var(--text); }
 }
 .paper-inline-code {
   color: var(--brand-accent);
-  background: transparent;
+  background: var(--code-bg);
   border: none;
-  padding: 0;
+  padding: 0 2px;
   font: inherit;
   font-weight: 400;
+}
+
+.paper-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--footer);
+  background: var(--code-bg);
+  padding: 0 2px;
+}
+
+.paper-link:hover,
+.paper-link:focus-visible {
+  text-decoration-color: var(--text);
 }
 
 .paper-inline-code--red {
@@ -1253,7 +1272,7 @@ blockquote[data-type="quote"] .ascii-callout { color: var(--text); }
 
 /* === PAPER MODE === */
 html.paper-mode {
-  font-size: clamp(4px, 1.4vw, 16px);
+  font-size: clamp(4px, 0.85vw, 16px);
 }
 
 .paper-document {
@@ -1461,7 +1480,7 @@ body.paper-mode .content {
   margin-bottom: 12px;
 }
 .footer-contact {
-  font-size:    12px;
+  font-size:    15px;
   color:        var(--footer);
   margin-bottom: 10px;
   display:      flex;

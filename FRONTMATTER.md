@@ -78,9 +78,50 @@ Campos aceitos em `cover`:
 
 - `art`: ASCII art principal da capa
 - `logo`: alias de `art`
-- `caption`: linha curta abaixo da arte
+- `image`: nome do arquivo em `media/` para usar uma imagem de verdade no lugar da arte ASCII
+- `caption`: linha curta abaixo da arte/imagem
 - `hideTitle`: esconde o box automatico com titulo, subtitulo, autor e tags
 - `align`: `left` ou `center` (padrao: `center`)
+
+### `image` (banner de verdade em vez de ASCII)
+
+Se voce nao quer lidar com arte ASCII (ou ela ta saindo torta por causa de
+escaping de YAML), use uma imagem normal:
+
+```yaml
+cover:
+  hideTitle: true
+  caption: tsoi32
+  image: rev-shell-banner.jpg
+```
+
+Coloque o arquivo em `media/` (mesmo lugar das imagens inline). Se `image`
+estiver presente, ela substitui totalmente a arte ASCII (`art` e `logo` sao
+ignorados). `caption` e `date` continuam aparecendo embaixo, como no modo
+ASCII.
+
+### `art` como lista (recomendado para arte "larga")
+
+O bloco literal `art: |` e sensivel a indentacao: se uma linha da arte tiver
+menos espacos que a primeira, o YAML quebra e o build descarta o frontmatter
+inteiro (titulo, data, tags, tudo) sem avisar.
+
+Pra evitar isso, escreva cada linha da arte como uma string entre aspas numa
+lista. Assim a indentacao da lista em si (os `-`) nao interfere no conteudo:
+
+```yaml
+cover:
+  hideTitle: true
+  caption: tsoi32
+  art:
+    - " /$$$$$$$  /$$ /$$$$$$$"
+    - "| $$__  $$| $$| $$__  $$"
+    - "|__/  |__/|__/|__/  |__/"
+```
+
+Use aspas duplas e escape `\` e `"` internos (ex: `\\` continua `\\`). O
+build junta as linhas com `\n` antes de renderizar, e o alinhamento relativo
+entre elas e preservado.
 
 Se `cover` tiver `art`, o build tambem mostra a `caption` e a `date` abaixo da
 arte, quando esses campos existirem.
@@ -131,7 +172,11 @@ Regras importantes para papers:
 - `> NOTE: ...` vira caixa NOTE
 - `> WARN: ...` vira caixa WARN
 - `> qualquer outra coisa` vira caixa de quote
-- blocos de codigo com `text`, `txt`, `plain` ou `plaintext` saem crus, sem borda
+- blocos de codigo com `ascii` ou `art` saem sem nenhuma caixa: sem borda, sem
+  fundo escuro, sem label — vira so texto puro dentro do paper, so que sem
+  quebra de linha automatica (util pra arte ASCII solta no meio do artigo)
+- blocos de codigo com `text`, `txt`, `plain` ou `plaintext` saem com fundo
+  escuro, mas sem borda nem label
 - qualquer outra linguagem vira bloco com borda e label, por exemplo `C`,
   `BASH` ou `PYTHON`
 - listas, tabelas e inline code sao mantidos como ASCII fixo
@@ -152,7 +197,11 @@ int main(void) {
 ```
 
 ```text
-raw ascii diagram here
+raw ascii diagram with dark background
+```
+
+```ascii
+arte solta, sem caixa nenhuma, so o texto mesmo
 ```
 ````
 
