@@ -1520,6 +1520,13 @@ body.paper-mode .content {
   text-align:  center;
 }
 
+/* em paper-mode o wrapper ocupa a tela toda; centraliza em relacao a
+   coluna de leitura (mesma largura das paper-callout), nao a tela */
+body.paper-mode .footer-irc {
+  max-width: 760px;
+  width:     100%;
+}
+
 /* === MODALS === */
 #omemo-modal {
   display:         none;
