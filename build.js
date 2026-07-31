@@ -1769,10 +1769,12 @@ function generateFooter(root, cfg, extra) {
   if (cfg.x)          parts.push(`<a href="${escapeHtml(cfg.x)}" target="_blank" rel="noopener" class="footer-link">[ x.com/${escapeHtml(cfg.x.replace(/^https?:\/\/(x\.com\/|twitter\.com\/)/, ''))} &#8594; ]</a>`);
   const contactHtml = parts.join('  <span class="footer-sep">|</span>  ');
   const gifsHtml    = generateGifcities(root, cfg);
+  const ircHtml     = `<div class="footer-irc">irc: gatunoccp2b7enkogfbjl6ipnxkkcfedy2uurolex22t7atp44odrgyd.onion/6667</div>`;
   return `<footer id="site-footer">
   <div class="footer-separator"></div>
   <div class="footer-contact">${contactHtml}</div>
   ${gifsHtml}
+  ${ircHtml}
   ${extra || ''}
 </footer>`;
 }
