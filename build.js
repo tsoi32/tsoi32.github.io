@@ -1689,7 +1689,7 @@ function wrapInBase(body, opts) {
   return renderTemplate(base, {
     pageTitle:  fullTitle,
     ogTitle:       escapeHtml(fullTitle),
-    ogDescription: escapeHtml(CONFIG.ogDescription),
+    ogDescription: escapeHtml(opts.ogDescription || CONFIG.ogDescription),
     ogImage:       opts.ogImage || `${CONFIG.siteUrl}/${CONFIG.ogImagePath}`,
     root:       opts.root || '',
     bodyClass:  opts.bodyClass || '',
@@ -2016,6 +2016,7 @@ function generatePostPage(post, allPosts, outDir, root, topicsMap, opts = {}) {
     wrapperClass: 'paper-shell',
     siteChrome: renderPaperTopNav(effectiveRoot),
     ogImage,
+    ogDescription: post.meta.description || getExcerpt(post.body),
   });
   if (opts.dirName) {
     const pageDir = path.join(outDir, opts.dirName);
