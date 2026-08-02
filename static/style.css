@@ -1272,7 +1272,7 @@ blockquote[data-type="quote"] .ascii-callout { color: var(--text); }
 
 /* === PAPER MODE === */
 html.paper-mode {
-  font-size: clamp(4px, 0.85vw, 16px);
+  font-size: 14px;
 }
 
 .paper-document {
@@ -1514,10 +1514,13 @@ body.paper-mode .content {
 
 .footer-irc {
   margin-top:  10px;
-  font-size:   12px;
+  font-size:   clamp(8px, 2.2vw, 12px);
   font-weight: 700;
   color:       var(--footer);
   text-align:  center;
+  white-space: nowrap;
+  overflow-x:  auto;
+  max-width:   100%;
 }
 
 /* em paper-mode o wrapper ocupa a tela toda; centraliza em relacao a
