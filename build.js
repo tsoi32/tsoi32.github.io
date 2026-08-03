@@ -1886,7 +1886,7 @@ function renderWindowFrame(title, bodyHtml, { meta = '', flush = false } = {}) {
 }
 
 function renderHomeManifesto() {
-  const image = `<img src="static/media/bit.png" alt="" class="home-manifesto__image" loading="lazy" width="1254" height="1137">`;
+  const image = `<img src="static/media/bitk.png" alt="" class="home-manifesto__image" loading="lazy" width="1122" height="1402">`;
   const bands = [
     { file: 'band-kino.png',    name: 'КИНО',        preview: 'preview-kino.mp3' },
     { file: 'band-molchat.jpg', name: 'МОЛЧАТ ДОМА', preview: 'preview-molchat.mp3' },
