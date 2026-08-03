@@ -1257,7 +1257,7 @@ const CONFIG = {
   siteSubtitle: 'reflexões e aprendizados',
   siteUrl:      'https://thebixowithsevenheads.wtf',
   ogDescription: 'vá para as montanhas, somente lá! existe a verdadeira paz que você tanto procura, amigo.',
-  ogImagePath:  'static/media/bit.png',
+  ogImagePath:  'static/media/bitk.png',
 };
 
 const SITE_ASCII_TITLE = `Цой32`;
