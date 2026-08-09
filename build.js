@@ -812,15 +812,10 @@ function renderPaperBody(body, opts = {}) {
   return withLineBg.join('\n').replace(/\n{6,}/g, '\n\n\n\n\n').trimEnd();
 }
 
-function renderPaperTopNav(root = '', width = 130) {
-  const prefix = '--[ ';
-  const label = 'HOME';
-  const suffix = ' ]';
+function renderPaperTopNav(root = '') {
   const safeRoot = String(root || '');
   const href = `${safeRoot}index.html`;
-  const fillWidth = width - prefix.length - label.length - suffix.length;
-  const fill = fillWidth > 0 ? '-'.repeat(fillWidth) : '';
-  return `<div class="paper-top-nav">${escapeHtml(prefix)}<a class="paper-top-nav__link" href="${escapeHtml(href)}">${escapeHtml(label)}</a>${escapeHtml(suffix)}${escapeHtml(fill)}</div>`;
+  return `<div class="paper-top-nav"><a class="paper-home-btn" href="${escapeHtml(href)}">&larr; home</a></div>`;
 }
 
 function renderPaperCover(meta, width) {
@@ -1663,17 +1658,42 @@ function formatTags(tags) {
   return ' [' + arr.join(', ') + ']';
 }
 
-function buildOmemoModal() {
+function buildInfoModal(cfg) {
+  if (!cfg) cfg = {};
   const raw = fs.existsSync('gifs/omemo.txt') ? fs.readFileSync('gifs/omemo.txt', 'utf8') : '';
-  if (!raw.trim()) return '';
-  return `<div id="omemo-modal" aria-hidden="true">
+  const sections = [];
+
+  if (cfg.xmpp) {
+    const devices = raw.trim() && cfg.xmpp_omemo
+      ? raw.trim().split(/\n\s*\n/).map(block => {
+          const lines = block.trim().split('\n');
+          const heading = lines.shift() || '';
+          return `<h2>${escapeHtml(heading.replace(/^#\s*/, ''))}</h2>\n<pre class="omemo-keys">${escapeHtml(lines.join('\n'))}</pre>`;
+        }).join('\n')
+      : '';
+    sections.push(`<h1>xmpp / omemo</h1>\n<p>${escapeHtml(cfg.xmpp)}</p>\n${devices}`);
+  }
+
+  if (cfg.x) {
+    const handle = escapeHtml(cfg.x.replace(/^https?:\/\/(x\.com\/|twitter\.com\/)/, ''));
+    sections.push(`<h1>x / twitter</h1>\n<p><a class="info-button" href="${escapeHtml(cfg.x)}" target="_blank" rel="noopener">x.com/${handle} &#8594;</a></p>`);
+  }
+
+  if (cfg.email) {
+    sections.push(`<h1>email</h1>\n<p>${escapeHtml(cfg.email)}</p>`);
+  }
+
+  if (!sections.length) return '';
+  return `<div id="info-modal" aria-hidden="true">
   <div class="pgp-modal-inner">
-    <div class="panel">
+    <div class="panel panel--dark">
       <div class="panel-header">
-        <span>OMEMO keys — in64weTrust@pwned.life</span>
-        <span class="window-controls"><span class="wbtn" id="omemo-modal-close">×</span></span>
+        <span>about</span>
+        <span class="window-controls"><span class="wbtn" id="info-modal-close">×</span></span>
       </div>
-      <div class="panel-body"><pre class="omemo-keys">${escapeHtml(raw)}</pre></div>
+      <div class="panel-body info-modal-body">
+        ${sections.join('\n')}
+      </div>
     </div>
   </div>
 </div>`;
@@ -1698,7 +1718,7 @@ function wrapInBase(body, opts) {
     body,
     breadcrumb: opts.breadcrumb || '',
     footer:     generateFooter(opts.root || '', cfg, opts.footerExtra || ''),
-    omemoModal: buildOmemoModal(),
+    infoModal:  buildInfoModal(cfg),
     pageMascot: opts.pageMascot || '',
   });
 }
@@ -1744,30 +1764,31 @@ function generateGifcities(root, cfg) {
   const files = fs.readdirSync(dir)
     .filter(f => exts.has(path.extname(f).toLowerCase()) && !EXCLUDED.has(f));
   if (!files.length) return '';
-  const gifLinks = (cfg && cfg.gif_links) ? cfg.gif_links : {};
-  const imgs = files.map(f => {
+  const gifLinks   = (cfg && cfg.gif_links) ? cfg.gif_links : {};
+  const featured   = new Set((cfg && cfg.featured_gifs) ? cfg.featured_gifs : []);
+  const renderImg  = f => {
     const img = `<img src="${root}static/media/badges/${escapeHtml(f)}" alt="${escapeHtml(f)}" loading="lazy" width="88" height="31">`;
     return gifLinks[f]
       ? `<a href="${escapeHtml(gifLinks[f])}" target="_blank" rel="noopener">${img}</a>`
       : img;
-  }).join('\n    ');
-  return `<div class="footer-gifs">\n    ${imgs}\n  </div>`;
+  };
+  const featuredFiles = files.filter(f => featured.has(f));
+  const regularFiles  = files.filter(f => !featured.has(f));
+  const featuredHtml = featuredFiles.length
+    ? `<div class="footer-gifs footer-gifs--featured">\n    ${featuredFiles.map(renderImg).join('\n    ')}\n  </div>`
+    : '';
+  const regularHtml = regularFiles.length
+    ? `<div class="footer-gifs footer-gifs--regular">\n    ${regularFiles.map(renderImg).join('\n    ')}\n  </div>`
+    : '';
+  return `${featuredHtml}\n  ${regularHtml}`;
 }
 
 function generateFooter(root, cfg, extra) {
   if (!cfg) cfg = {};
-  const parts = [];
-  if (cfg.xmpp) {
-    const omemoLink = cfg.xmpp_omemo
-      ? ` <a href="#" id="omemo-modal-trigger" class="footer-link">[ omemo keys &#8594; ]</a>`
-      : '';
-    parts.push(`<span>xmpp: ${escapeHtml(cfg.xmpp)}</span>${omemoLink}`);
-  } else if (cfg.xmpp_omemo) {
-    parts.push(`<a href="#" id="omemo-modal-trigger" class="footer-link">[ omemo keys &#8594; ]</a>`);
-  }
-  if (cfg.email)      parts.push(`<span>email: ${escapeHtml(cfg.email)}</span>`);
-  if (cfg.x)          parts.push(`<a href="${escapeHtml(cfg.x)}" target="_blank" rel="noopener" class="footer-link">[ x.com/${escapeHtml(cfg.x.replace(/^https?:\/\/(x\.com\/|twitter\.com\/)/, ''))} &#8594; ]</a>`);
-  const contactHtml = parts.join('  <span class="footer-sep">|</span>  ');
+  const hasInfo   = !!(cfg.xmpp || cfg.email || cfg.x);
+  const contactHtml = hasInfo
+    ? `<a href="#" id="info-modal-trigger" class="footer-link">[ 0x7ffffffffffffff0 ]</a>`
+    : '';
   const gifsHtml    = generateGifcities(root, cfg);
   const ircHtml     = `<div class="footer-irc">irc: gatunoccp2b7enkogfbjl6ipnxkkcfedy2uurolex22t7atp44odrgyd.onion/6667</div>`;
   return `<footer id="site-footer">
@@ -1827,32 +1848,43 @@ function renderHomeFeed(posts, notes) {
         const index = chronoIndex.get(item.slug);
         const href = `p/${paperDirName(item.slug, chronoIndex)}/`;
         const title = escapeHtml(toAscii(item.meta.title || item.slug));
-        const metaValue = item.meta.author || item.meta.date || item.section;
-        const meta = escapeHtml(toAscii(String(metaValue)));
+        const authorValue = item.meta.author || item.meta.date || item.section;
+        const author = escapeHtml(toAscii(String(authorValue)));
+        const locked = item.meta.locked === 'true';
         const flags = [];
-        if (item.meta.locked === 'true') {
-          flags.push('<span class="home-feed__flag home-feed__flag--locked">[locked]</span>');
+        if (locked) {
+          flags.push('<span class="home-feed-card__flag home-feed-card__flag--locked">&#128274; [locked]</span>');
         }
         if (item.meta.pinned === 'true') {
-          flags.push('<span class="home-feed__flag home-feed__flag--pinned">[pinned]</span>');
+          flags.push('<span class="home-feed-card__flag home-feed-card__flag--pinned">[pinned]</span>');
         }
         if (item.meta.new === 'true') {
-          flags.push('<span class="home-feed__flag home-feed__flag--new">[NEW]</span>');
+          flags.push('<span class="home-feed-card__flag home-feed-card__flag--new">[NEW]</span>');
         }
-        const titleHtml = item.meta.locked === 'true'
-          ? `<span class="home-feed__title home-feed__title--locked">${title}</span>`
-          : `<a class="home-feed__title" href="${href}">${title}</a>`;
         const flagHtml = flags.length
-          ? `<span class="home-feed__flags">${flags.join('')}</span>`
+          ? `<span class="home-feed-card__flags">${flags.join('')}</span>`
           : '';
-        const titleCell = `<span class="home-feed__title-cell">${titleHtml}</span>`;
+        const tags = Array.isArray(item.meta.tags) ? item.meta.tags : (item.meta.tags ? [item.meta.tags] : []);
+        const tagsHtml = tags.length
+          ? `<div class="home-feed-card__tags">${tags.map(t => `<span class="home-feed-card__tag">${escapeHtml(toAscii(String(t)))}</span>`).join('')}</div>`
+          : '';
+        const metaRowHtml = (tagsHtml || flagHtml)
+          ? `<div class="home-feed-card__meta-row">${tagsHtml}${flagHtml}</div>`
+          : '';
         const rowIndex = '0x' + index.toString(16).padStart(2, '0');
+        const tag = locked ? 'div' : 'a';
+        const hrefAttr = locked ? '' : ` href="${href}"`;
         return `<li class="home-feed__entry">
-  <span class="home-feed__index">[${rowIndex}]</span>
-  ${titleCell}
-  <span class="home-feed__flags-cell">${flagHtml}</span>
-  <span class="home-feed__dots" aria-hidden="true"></span>
-  <span class="home-feed__meta">${meta}</span>
+  <${tag} class="home-feed-card${locked ? ' home-feed-card--locked' : ''}"${hrefAttr}>
+    <div class="home-feed-card__top">
+      <span class="home-feed-card__index">[${rowIndex}]</span>
+      <span class="home-feed-card__author">${author}</span>
+    </div>
+    <div class="home-feed-card__title-row">
+      <span class="home-feed-card__title">${title}</span>
+    </div>
+    ${metaRowHtml}
+  </${tag}>
 </li>`;
       }).join('\n')
     : `<li class="home-feed__empty">no entries yet.</li>`;
@@ -1888,22 +1920,21 @@ function renderWindowFrame(title, bodyHtml, { meta = '', flush = false } = {}) {
 function renderHomeManifesto() {
   const image = `<img src="static/media/bitk.png" alt="" class="home-manifesto__image" loading="lazy" width="1122" height="1402">`;
   const bands = [
-    { file: 'band-kino.png',    name: 'КИНО',        preview: 'preview-kino.mp3' },
-    { file: 'band-molchat.jpg', name: 'МОЛЧАТ ДОМА', preview: 'preview-molchat.mp3' },
+    { file: 'band-kino.png',           name: 'КИНО',              preview: 'preview-kino.mp3' },
+    { file: 'band-molchat.jpg',        name: 'МОЛЧАТ ДОМА',        preview: 'preview-molchat.mp3' },
+    { file: 'band-metanoia.jpg',       name: 'METANOIA',           preview: 'preview-metanoia.mp3' },
+    { file: 'band-hilltodieupon.jpg',  name: 'A HILL TO DIE UPON', preview: 'preview-hilltodieupon.mp3' },
   ];
   const bandsGrid = `<div class="home-manifesto__bands">
 ${bands.map(b => {
     const img = `<img src="static/media/${b.file}" alt="${escapeHtml(b.name)}" class="home-manifesto__band-img" loading="lazy">`;
-    const cover = `<div class="home-manifesto__band-cover">${img}</div>`;
     const play = b.preview
       ? `<button type="button" class="home-manifesto__band-play" data-audio="static/media/${escapeHtml(b.preview)}" aria-label="tocar prévia de ${escapeHtml(b.name)}">[&gt;]</button>`
       : '';
+    const cover = `<div class="home-manifesto__band-cover">${img}${play}</div>`;
     return `  <div class="home-manifesto__band">
     ${cover}
-    <div class="home-manifesto__band-row">
-      <span class="home-manifesto__band-name">${escapeHtml(b.name)}</span>
-      ${play}
-    </div>
+    <span class="home-manifesto__band-name">${escapeHtml(b.name)}</span>
   </div>`;
   }).join('\n')}
 </div>`;
@@ -2107,9 +2138,8 @@ function generateHomePage(posts, notes, topics, themes) {
     homeManifesto: renderHomeManifesto(),
   });
 
-  const latestItems = sortArchiveItems(posts || []);
-  const latestDate = latestItems.length ? String(latestItems[0].meta.date || '') : '';
-  const footerExtra = latestDate ? `<div class="footer-updated">updated ${escapeHtml(latestDate)}</div>` : '';
+  const buildDate = new Date().toISOString().slice(0, 10);
+  const footerExtra = `<div class="footer-updated">updated ${escapeHtml(buildDate)}</div>`;
 
   const html = wrapInBase(body, {
     rawTitle: `@tsoi32 | @${SITE_ASCII_TITLE}`,
@@ -2233,7 +2263,7 @@ module.exports = {
   decoratePaperDocumentHtml,
   CONFIG, readTemplate, ensureDir, readMarkdownFiles,
   parseChangelogEntries, formatDate, formatTags,
-  wrapInBase, renderWidgetList, generateGifcities, generateFooter, asciiTitle,
+  wrapInBase, renderWidgetList, generateGifcities, generateFooter, buildInfoModal, asciiTitle,
   renderPostCard, renderPostRow, renderPostTable, sortArchiveItems, groupArchiveItems, renderArchiveTree, renderPostFrontmatter, renderAsciiToc, renderPostFooter,
   renderPaperDocument, renderPaperTopNav,
   renderHomeHeroRight, renderHomeFeed, renderHomeManifesto, renderHomeRail,

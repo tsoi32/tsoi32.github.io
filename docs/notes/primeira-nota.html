@@ -19,7 +19,7 @@
 
 <div id="wrapper" class="paper-shell">
 
-  <div class="paper-top-nav">--[ <a class="paper-top-nav__link" href="../index.html">HOME</a> ]------------------------------------------------------------------------------------------------------------------------</div>
+  <div class="paper-top-nav"><a class="paper-home-btn" href="../index.html">&larr; home</a></div>
 
   <div id="main-col">
     <pre class="paper-document"><span class="paper-line-bg">+================================================================================================================================+</span>
@@ -38,8 +38,12 @@
 
   <footer id="site-footer">
   <div class="footer-separator"></div>
-  <div class="footer-contact"><span>xmpp: in64weTrust@pwned.life</span> <a href="#" id="omemo-modal-trigger" class="footer-link">[ omemo keys &#8594; ]</a>  <span class="footer-sep">|</span>  <span>email: thebixowithsevenheads@getgoogleoff.me</span>  <span class="footer-sep">|</span>  <a href="https://x.com/tsoi32" target="_blank" rel="noopener" class="footer-link">[ x.com/tsoi32 &#8594; ]</a></div>
-  <div class="footer-gifs">
+  <div class="footer-contact"><a href="#" id="info-modal-trigger" class="footer-link">[ 0x7ffffffffffffff0 ]</a></div>
+  <div class="footer-gifs footer-gifs--featured">
+    <a href="https://x.com/tsoi32" target="_blank" rel="noopener"><img src="../static/media/badges/7heads.png" alt="7heads.png" loading="lazy" width="88" height="31"></a>
+    <a href="https://bezu.dev/" target="_blank" rel="noopener"><img src="../static/media/badges/bezu_button-v2.png" alt="bezu_button-v2.png" loading="lazy" width="88" height="31"></a>
+  </div>
+  <div class="footer-gifs footer-gifs--regular">
     <img src="../static/media/badges/2privacy.gif" alt="2privacy.gif" loading="lazy" width="88" height="31">
     <img src="../static/media/badges/3computer.jpg" alt="3computer.jpg" loading="lazy" width="88" height="31">
     <img src="../static/media/badges/desktop.gif" alt="desktop.gif" loading="lazy" width="88" height="31">
@@ -74,23 +78,29 @@ document.querySelectorAll('.content .pre-wrap').forEach(function(wrap) {
   pre.appendChild(btn);
 });
 </script>
-<div id="omemo-modal" aria-hidden="true">
+<div id="info-modal" aria-hidden="true">
   <div class="pgp-modal-inner">
-    <div class="panel">
+    <div class="panel panel--dark">
       <div class="panel-header">
-        <span>OMEMO keys — in64weTrust@pwned.life</span>
-        <span class="window-controls"><span class="wbtn" id="omemo-modal-close">×</span></span>
+        <span>about</span>
+        <span class="window-controls"><span class="wbtn" id="info-modal-close">×</span></span>
       </div>
-      <div class="panel-body"><pre class="omemo-keys"># device 1
-
-D1FD187B 71E50AD6 64C71535 D9C6F8F6
-B690A7B9 9C433017 10A639AF F61F9E45
-
-# device 2
-
-C862E858 EB49648C 57B44D97 4CD71D28
-ED85E8AA 77DE132D 807E8E90 7038194E
-</pre></div>
+      <div class="panel-body info-modal-body">
+        <h1>xmpp / omemo</h1>
+<p>in64weTrust@pwned.life</p>
+<h2>device 1</h2>
+<pre class="omemo-keys"></pre>
+<h2>D1FD187B 71E50AD6 64C71535 D9C6F8F6</h2>
+<pre class="omemo-keys">B690A7B9 9C433017 10A639AF F61F9E45</pre>
+<h2>device 2</h2>
+<pre class="omemo-keys"></pre>
+<h2>C862E858 EB49648C 57B44D97 4CD71D28</h2>
+<pre class="omemo-keys">ED85E8AA 77DE132D 807E8E90 7038194E</pre>
+<h1>x / twitter</h1>
+<p><a class="info-button" href="https://x.com/tsoi32" target="_blank" rel="noopener">x.com/tsoi32 &#8594;</a></p>
+<h1>email</h1>
+<p>thebixowithsevenheads@getgoogleoff.me</p>
+      </div>
     </div>
   </div>
 </div>
@@ -121,7 +131,7 @@ ED85E8AA 77DE132D 807E8E90 7038194E
       if (_openModals === 0) { document.body.style.overflow = ''; document.documentElement.style.overflowY = ''; }
     }
   }
-  bindModal('omemo-modal', 'omemo-modal-trigger', 'omemo-modal-close');
+  bindModal('info-modal', 'info-modal-trigger', 'info-modal-close');
 })();
 </script>
 <script>

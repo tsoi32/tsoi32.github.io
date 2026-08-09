@@ -2,7 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { parseFrontmatter, generateSlug, renderTemplate, escapeHtml,
-        generateFooter, renderTopicsSection, asciiTitle,
+        generateFooter, buildInfoModal, renderTopicsSection, asciiTitle,
         renderHomeHero, renderHomeFeed, renderHomeManifesto,
         renderPostFrontmatter, renderArchiveTree, renderAsciiToc, renderPostFooter,
         renderPaperDocument, renderPaperTopNav, decoratePaperDocumentHtml, wrapAsciiText } = require('./build.js');
@@ -70,9 +70,9 @@ test('renderHomeHero: gera masthead limpo sem banner em caixa', () => {
   assert.ok(!html.includes('note'), 'nao deve mostrar notas no hero');
 });
 
-test('renderHomeFeed: lista itens sem arvore de arquivos', () => {
+test('renderHomeFeed: lista itens como cards, sem arvore de arquivos', () => {
   const html = renderHomeFeed([
-    { slug: 'alpha', meta: { title: 'Alpha Paper', author: 'alice', date: '2026-06-03' } },
+    { slug: 'alpha', meta: { title: 'Alpha Paper', author: 'alice', date: '2026-06-03', tags: ['privacy'] } },
     { slug: 'beta', meta: { title: 'Beta Paper', author: 'bob', date: '2026-06-02', pinned: 'true' } },
     { slug: 'gamma', meta: { title: 'Gamma Paper', author: 'carol', date: '2026-06-01', locked: 'true' } },
   ], [
@@ -83,19 +83,18 @@ test('renderHomeFeed: lista itens sem arvore de arquivos', () => {
   assert.ok(html.includes('home-feed__side-char--red'), 'deve colorir a lateral com vermelho');
   assert.ok(!html.includes('home-feed__side-char--purple'), 'nao deve colorir a lateral com roxo');
   assert.ok(html.includes('Alpha Paper'), 'deve listar o paper mais recente');
-  assert.ok(html.includes('papers/alpha.html'), 'deve linkar o paper');
+  assert.ok(html.includes('class="home-feed-card"'), 'cada item deve virar um card/botao');
+  assert.ok(html.includes('href="p/0x02/"'), 'deve linkar o paper pelo id hex cronologico');
   assert.ok(!html.includes('notes/note-1.html'), 'nao deve linkar a nota');
   assert.ok(html.includes('[0x00]'), 'deve numerar os itens em hexa');
   assert.ok(html.includes('[0x01]'), 'deve numerar o segundo paper em hexa');
-  assert.ok(html.includes('[locked]'), 'deve mostrar item locked em vermelho');
-  assert.ok(html.includes('[pinned]'), 'deve mostrar item pinned em vermelho');
-  assert.ok(html.includes('home-feed__flag--locked'), 'deve marcar locked com classe propria');
-  assert.ok(html.includes('home-feed__flag--pinned'), 'deve marcar pinned com classe propria');
-  assert.ok(html.includes('home-feed__title-cell'), 'deve agrupar titulo e status na mesma celula');
-  assert.ok(!html.includes('href="papers/gamma.html"'), 'locked nao deve virar link na home');
-  assert.ok(html.includes('Beta Paper</a>&nbsp;&nbsp;<span class="home-feed__flags"><span class="home-feed__flag home-feed__flag--pinned">[pinned]</span></span>'), 'pinned deve ter dois espacos entre titulo e badge');
-  assert.ok(html.includes('Gamma Paper</span>&nbsp;&nbsp;<span class="home-feed__flags"><span class="home-feed__flag home-feed__flag--locked">[locked]</span></span>'), 'locked deve ter dois espacos entre titulo e badge');
-  assert.ok(html.includes('home-feed__dots'), 'deve desenhar os dots da lista');
+  assert.ok(html.includes('[locked]'), 'deve mostrar item locked');
+  assert.ok(html.includes('[pinned]'), 'deve mostrar item pinned');
+  assert.ok(html.includes('home-feed-card__flag--locked'), 'deve marcar locked com classe propria');
+  assert.ok(html.includes('home-feed-card__flag--pinned'), 'deve marcar pinned com classe propria');
+  assert.ok(html.includes('home-feed-card__tag'), 'deve mostrar as tags no card');
+  assert.ok(html.includes('home-feed-card--locked'), 'locked deve virar card nao clicavel');
+  assert.ok(!html.includes('href="p/0x00/"'), 'locked nao deve virar link na home');
   assert.ok(!html.includes('archive-tree'), 'nao deve usar arvore de arquivos');
 });
 
@@ -133,11 +132,24 @@ test('renderTopicsSection: topic bloqueado nao tem link e tem [locked]', () => {
   assert.ok(html.includes('[locked]'), 'deve ter label [locked]');
 });
 
-test('generateFooter: contém xmpp e email', () => {
+test('generateFooter: mostra botão de info, sem expor xmpp/email direto', () => {
   const cfg = { xmpp: 'test@xmpp.example', email: 'test@mail.example' };
   const html = generateFooter('', cfg);
+  assert.ok(html.includes('info-modal-trigger'), 'deve ter o botão que abre o modal de info');
+  assert.ok(!html.includes('test@xmpp.example'), 'endereço xmpp não deve mais ficar exposto no footer');
+  assert.ok(!html.includes('test@mail.example'), 'endereço email não deve mais ficar exposto no footer');
+});
+
+test('buildInfoModal: contém xmpp e email', () => {
+  const cfg = { xmpp: 'test@xmpp.example', email: 'test@mail.example' };
+  const html = buildInfoModal(cfg);
   assert.ok(html.includes('test@xmpp.example'), 'deve ter endereço xmpp');
   assert.ok(html.includes('test@mail.example'), 'deve ter endereço email');
+});
+
+test('buildInfoModal: cfg vazio não explode e não gera modal', () => {
+  assert.doesNotThrow(() => buildInfoModal({}));
+  assert.equal(buildInfoModal({}), '');
 });
 
 test('generateFooter: cfg vazio não explode', () => {
@@ -289,10 +301,10 @@ test('renderPaperDocument: gera capa, sumario e seções em ASCII', () => {
   assert.ok(!text.includes('--[ HOME ]--'), 'nao deve carregar navegacao dentro do paper');
 });
 
-test('renderPaperTopNav: gera link para o index do site', () => {
+test('renderPaperTopNav: gera botão de home para o index do site', () => {
   const html = renderPaperTopNav('../');
   assert.ok(html.includes('href="../index.html"'), 'deve apontar para o index do site');
-  assert.ok(html.includes('--[ <a class="paper-top-nav__link" href="../index.html">HOME</a> ]'), 'deve deixar apenas HOME clicavel');
+  assert.ok(html.includes('class="paper-home-btn"'), 'deve renderizar como botão, não link ascii');
 });
 
 test('renderPaperDocument: usa cover manual e remove labels de bloco', () => {
