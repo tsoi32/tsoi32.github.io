@@ -5,7 +5,7 @@ date: 2026-07-30
 new: true
 theme: privacy
 tags: [privacy]
-description: como subir um tunnel stealth e trggar revshell.
+description: como subir um tunnel stealth e triggar revshell.
 cover:
   hideTitle: true
   caption: tsoi32

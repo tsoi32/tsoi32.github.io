@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="{{root}}static/style.css">
 </head>
 <body class="{{bodyClass}}">
+{{pageBackground}}
 {{pageMascot}}
 <div id="wrapper" class="{{wrapperClass}}">
 
@@ -24,6 +25,8 @@
   <div id="main-col">
     {{body}}
   </div>
+
+  {{asideChrome}}
 
   {{footer}}
 
@@ -104,5 +107,18 @@ document.querySelectorAll('.content .pre-wrap').forEach(function(wrap) {
   });
 })();
 </script>
+<script>
+document.querySelectorAll('.home-feed-row__expand').forEach(function(btn) {
+  var detail = document.getElementById(btn.getAttribute('aria-controls'));
+  if (!detail) return;
+  btn.addEventListener('click', function() {
+    var open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    btn.textContent = open ? '+' : String.fromCharCode(0x2212);
+    detail.hidden = open;
+  });
+});
+</script>
+<script src="{{root}}static/oneko/oneko.js" data-cat="{{root}}static/oneko/oneko.gif"></script>
 </body>
 </html>

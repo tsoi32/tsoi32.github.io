@@ -54,6 +54,8 @@ const PAPER_LINK_OPEN = '\x14';
 const PAPER_LINK_SEP = '\x15';
 const PAPER_LINK_CLOSE = '\x16';
 const PAPER_BREAK = '\x17';
+const PAPER_ASCIIART_OPEN = '\x18';
+const PAPER_ASCIIART_CLOSE = '\x19';
 
 const HLJS_LANG_ALIASES = {
   asm: 'x86asm',
@@ -120,6 +122,14 @@ function wrapDarkBlock(lines) {
   const out = lines.slice();
   out[0] = PAPER_DARKBLOCK_OPEN + out[0];
   out[out.length - 1] = out[out.length - 1] + PAPER_DARKBLOCK_CLOSE;
+  return out;
+}
+
+function markAsciiArt(lines) {
+  if (!lines || !lines.length) return lines;
+  const out = lines.slice();
+  out[0] = PAPER_ASCIIART_OPEN + out[0];
+  out[out.length - 1] = out[out.length - 1] + PAPER_ASCIIART_CLOSE;
   return out;
 }
 
@@ -642,7 +652,7 @@ function renderCodeBlock(token, width, indent = '') {
   const lang = String(token.lang || '').trim().toLowerCase();
   if (['ascii', 'art'].includes(lang)) {
     const artLines = String(token.text || '').replace(/\r/g, '').split('\n');
-    return artLines.map(line => indent + line);
+    return markAsciiArt(artLines.map(line => indent + line));
   }
   const rawLines = String(token.text || '').replace(/\r/g, '').split('\n').map(toAsciiLine);
   if (['txt', 'text', 'plain', 'plaintext'].includes(lang)) {
@@ -796,6 +806,7 @@ function renderPaperBody(body, opts = {}) {
     PAPER_SUMMARY_OPEN, PAPER_IMAGE_OPEN,
   ];
   let insideDarkBlock = false;
+  let insideAsciiArt = false;
   const withLineBg = blocks.map(line => {
     if (line === '') return line;
     const wasInsideDark = insideDarkBlock;
@@ -803,7 +814,13 @@ function renderPaperBody(body, opts = {}) {
     const hasDarkClose = line.includes(PAPER_DARKBLOCK_CLOSE);
     if (hasDarkOpen) insideDarkBlock = true;
     if (hasDarkClose) insideDarkBlock = false;
+    const wasInsideAsciiArt = insideAsciiArt;
+    const hasAsciiOpen = line.includes(PAPER_ASCIIART_OPEN);
+    const hasAsciiClose = line.includes(PAPER_ASCIIART_CLOSE);
+    if (hasAsciiOpen) insideAsciiArt = true;
+    if (hasAsciiClose) insideAsciiArt = false;
     const isOpaque = wasInsideDark || hasDarkOpen || hasDarkClose
+      || wasInsideAsciiArt || hasAsciiOpen || hasAsciiClose
       || opaqueBlockMarkers.some(marker => line.includes(marker));
     if (isOpaque) return line;
     return PAPER_TOKEN_OPEN + 'paper-line-bg' + PAPER_TOKEN_SEP + line + PAPER_TOKEN_CLOSE;
@@ -1332,6 +1349,7 @@ function decoratePaperDocumentHtml(html, root = '') {
   let out = String(html || '')
     .replace(/\x04/g, '<span class="paper-block-dark">')
     .replace(/\x05/g, '</span>')
+    .replace(/[\x18\x19]/g, '')
     .replace(/\x02([A-Za-z0-9+/=]*)\x03/g, (_, payload) => {
       try {
         const { src, alt } = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
@@ -1665,8 +1683,8 @@ function buildInfoModal(cfg) {
 
   if (cfg.xmpp) {
     const devices = raw.trim() && cfg.xmpp_omemo
-      ? raw.trim().split(/\n\s*\n/).map(block => {
-          const lines = block.trim().split('\n');
+      ? raw.trim().split(/\n(?=#\s)/).map(block => {
+          const lines = block.trim().split('\n').filter(line => line.trim() !== '');
           const heading = lines.shift() || '';
           return `<h2>${escapeHtml(heading.replace(/^#\s*/, ''))}</h2>\n<pre class="omemo-keys">${escapeHtml(lines.join('\n'))}</pre>`;
         }).join('\n')
@@ -1716,15 +1734,23 @@ function wrapInBase(body, opts) {
     wrapperClass: opts.wrapperClass || '',
     siteChrome,
     body,
+    asideChrome: opts.asideChrome || '',
     breadcrumb: opts.breadcrumb || '',
     footer:     generateFooter(opts.root || '', cfg, opts.footerExtra || ''),
     infoModal:  buildInfoModal(cfg),
     pageMascot: opts.pageMascot || '',
+    pageBackground: renderPageBackground(opts.root || ''),
   });
 }
 
 function renderPageMascot(root) {
   return `<img src="${root}static/media/freebsd.gif" alt="" class="page-mascot" aria-hidden="true" loading="lazy" width="380" height="371">`;
+}
+
+function renderPageBackground(root) {
+  const file = 'media/backgrounds/background3.jpg';
+  if (!fs.existsSync(file)) return '';
+  return `<div id="page-bg" aria-hidden="true" style="background-image:url('${root}static/media/backgrounds/background3.jpg')"></div>`;
 }
 
 function renderChangelog(entries) {
@@ -1815,14 +1841,15 @@ function renderTaggedPostsSection(items, root) {
   return `<hr style="border-top:1px solid var(--border);margin:20px 0 14px">` + treeHtml;
 }
 
-function renderHomeHeroRight() {
-  return `<header class="home-hero home-hero--right">
-  <div class="home-hero__markline" aria-hidden="true">
-    <span class="home-hero__rule"></span>
-    <span class="home-hero__brand">Цой<span class="home-hero__brand-accent">32</span></span>
-    <span class="home-hero__rule"></span>
-  </div>
-</header>`;
+function readBannerAscii() {
+  const file = 'src/banner/ascii.html';
+  return fs.existsSync(file) ? fs.readFileSync(file, 'utf8').trimEnd() : '';
+}
+
+function renderHomeBanner() {
+  return `<div class="home-banner">
+  <pre class="banner-ascii" aria-hidden="true">${readBannerAscii()}</pre>
+</div>`;
 }
 
 function renderHomeFeed(posts, notes) {
@@ -1862,29 +1889,38 @@ function renderHomeFeed(posts, notes) {
           flags.push('<span class="home-feed-card__flag home-feed-card__flag--new">[NEW]</span>');
         }
         const flagHtml = flags.length
-          ? `<span class="home-feed-card__flags">${flags.join('')}</span>`
+          ? `<span class="home-feed-row__flags">${flags.join('')}</span>`
           : '';
         const tags = Array.isArray(item.meta.tags) ? item.meta.tags : (item.meta.tags ? [item.meta.tags] : []);
         const tagsHtml = tags.length
           ? `<div class="home-feed-card__tags">${tags.map(t => `<span class="home-feed-card__tag">${escapeHtml(toAscii(String(t)))}</span>`).join('')}</div>`
           : '';
-        const metaRowHtml = (tagsHtml || flagHtml)
-          ? `<div class="home-feed-card__meta-row">${tagsHtml}${flagHtml}</div>`
+        const descriptionRaw = item.meta.description || getExcerpt(item.body || '', 160);
+        const descriptionHtml = descriptionRaw
+          ? `<div class="home-feed-card__description">${escapeHtml(toAscii(descriptionRaw))}</div>`
           : '';
         const rowIndex = '0x' + index.toString(16).padStart(2, '0');
         const tag = locked ? 'div' : 'a';
         const hrefAttr = locked ? '' : ` href="${href}"`;
+        const detailId = `entry-detail-${escapeHtml(item.slug)}`;
         return `<li class="home-feed__entry">
-  <${tag} class="home-feed-card${locked ? ' home-feed-card--locked' : ''}"${hrefAttr}>
-    <div class="home-feed-card__top">
-      <span class="home-feed-card__index">[${rowIndex}]</span>
-      <span class="home-feed-card__author">${author}</span>
+  <div class="home-window home-feed-window${locked ? ' home-feed-window--locked' : ''}">
+    <div class="window-titlebar">
+      <${tag} class="home-feed-row__link"${hrefAttr}>
+        <span class="home-feed-row__index">[${rowIndex}]</span>
+        <span class="home-feed-row__title">${title}</span>
+      </${tag}>
+      <span class="window-titlebar__meta">
+        ${flagHtml}
+        <button type="button" class="wbtn home-feed-row__expand" aria-expanded="false" aria-controls="${detailId}">+</button>
+      </span>
     </div>
-    <div class="home-feed-card__title-row">
-      <span class="home-feed-card__title">${title}</span>
+    <div class="window-body home-feed-row__detail" id="${detailId}" hidden>
+      <div class="home-feed-card__author">by <strong>${author}</strong></div>
+      ${descriptionHtml}
+      ${tagsHtml}
     </div>
-    ${metaRowHtml}
-  </${tag}>
+  </div>
 </li>`;
       }).join('\n')
     : `<li class="home-feed__empty">no entries yet.</li>`;
@@ -1902,23 +1938,11 @@ ${items}
 </div>`;
 }
 
-function renderWindowFrame(title, bodyHtml, { meta = '', flush = false } = {}) {
-  return `<div class="home-window">
-  <div class="window-titlebar">
-    <span>${title}</span>
-    <span class="window-titlebar__meta">
-      ${meta}
-      <span class="window-controls"><span class="wbtn">×</span></span>
-    </span>
-  </div>
-  <div class="window-body${flush ? ' window-body--flush' : ''}">
-    ${bodyHtml}
-  </div>
-</div>`;
-}
-
 function renderHomeManifesto() {
-  const image = `<img src="static/media/bitk.png" alt="" class="home-manifesto__image" loading="lazy" width="1122" height="1402">`;
+  const image = `<div class="home-manifesto__frame">
+    <img src="static/media/bitk.png" alt="" class="home-manifesto__image" loading="lazy" width="1122" height="1402">
+    <span class="home-manifesto__caption">bitkill.png</span>
+  </div>`;
   const bands = [
     { file: 'band-kino.png',           name: 'КИНО',              preview: 'preview-kino.mp3' },
     { file: 'band-molchat.jpg',        name: 'МОЛЧАТ ДОМА',        preview: 'preview-molchat.mp3' },
@@ -1939,7 +1963,7 @@ ${bands.map(b => {
   }).join('\n')}
 </div>`;
   const bandsTitle = `<div class="home-manifesto__bands-title" lang="ru">Лучшие песни!</div>`;
-  return renderWindowFrame('bitkill.png', image, { flush: true })
+  return image
     + `<section class="home-manifesto home-manifesto--bands">
   ${bandsTitle}
   ${bandsGrid}
@@ -1948,6 +1972,20 @@ ${bands.map(b => {
 
 function renderHomeRail(posts, notes) {
   return renderHomeManifesto(posts, notes);
+}
+
+function renderHomeSidebar() {
+  return `<aside id="home-sidebar">
+  <div class="window-titlebar">
+    <span>sidebar.exe</span>
+    <span class="window-titlebar__meta">
+      <span class="window-controls"><span class="wbtn">×</span></span>
+    </span>
+  </div>
+  <div class="window-body">
+    ${renderHomeManifesto()}
+  </div>
+</aside>`;
 }
 
 // ─── topics ──────────────────────────────────────────────────────────────────
@@ -2133,9 +2171,8 @@ function generateCategoryPage(label, posts, matchTags, outDir, root) {
 function generateHomePage(posts, notes, topics, themes) {
   const indexTpl = readTemplate('index');
   const body     = renderTemplate(indexTpl, {
-    homeHeroRight: renderHomeHeroRight(),
+    homeBanner: renderHomeBanner(),
     homeFeed: renderHomeFeed(posts, notes),
-    homeManifesto: renderHomeManifesto(),
   });
 
   const buildDate = new Date().toISOString().slice(0, 10);
@@ -2147,6 +2184,7 @@ function generateHomePage(posts, notes, topics, themes) {
     bodyClass: 'home-mode',
     wrapperClass: 'home-shell',
     siteChrome: '',
+    asideChrome: renderHomeSidebar(),
     footerExtra,
   });
   fs.writeFileSync(path.join('docs', 'index.html'), html);
@@ -2266,7 +2304,7 @@ module.exports = {
   wrapInBase, renderWidgetList, generateGifcities, generateFooter, buildInfoModal, asciiTitle,
   renderPostCard, renderPostRow, renderPostTable, sortArchiveItems, groupArchiveItems, renderArchiveTree, renderPostFrontmatter, renderAsciiToc, renderPostFooter,
   renderPaperDocument, renderPaperTopNav,
-  renderHomeHeroRight, renderHomeFeed, renderHomeManifesto, renderHomeRail,
+  renderHomeBanner, renderHomeFeed, renderHomeManifesto, renderHomeRail, renderHomeSidebar,
   readTopics, renderTopicsSection, generateTopicPage,
   generatePostPage, generateListPage, generateCategoryPage, generateStaticPage, generateHomePage,
   wrapAsciiText,
